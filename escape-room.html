@@ -1,18 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head> 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>密室逃脫</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script defer src="js/script.js"></script>
+    <title>密室逃脫設計工具</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        #toolbar { display: flex; gap: 10px; padding: 10px; }
-        .tool { cursor: pointer; padding: 5px; border: 1px solid black; background: lightgray; }
-        #canvas-container { position: relative; }
-        canvas { border: 1px solid black; }
-        #save-list { margin-top: 10px; }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        #toolbar { display: flex; gap: 10px; padding: 10px; background: #333; color: white; justify-content: center; }
+        .tool { cursor: pointer; padding: 10px 15px; border: none; background: #555; color: white; border-radius: 5px; }
+        .tool:hover { background: #777; }
+        #canvas-container { position: relative; display: flex; justify-content: center; margin-top: 20px; }
+        canvas { border: 2px solid black; background: url('https://www.transparenttextures.com/patterns/cubes.png'); }
+        #save-list { margin-top: 10px; padding: 5px; }
     </style>
 </head>
 <body>
@@ -23,26 +22,25 @@
         <a href="about.html">關於我們</a>
         <a href="contact.html">聯絡我們</a>
     </nav>
-
-    <h1>密室逃脫主題</h1>
-    <p>這裡是關於密室逃脫的介紹...</p>
-    <h1>密室逃脫設計工具</h1>
+    <h1 style="text-align: center;">密室逃脫設計工具</h1>
     
     <div id="toolbar">
         <button class="tool" onclick="setTool('draw')">繪製牆壁</button>
-        <button class="tool" onclick="setTool('lock')">鎖</button>
-        <button class="tool" onclick="setTool('sensor')">感應器</button>
-        <button class="tool" onclick="setTool('clear')">清除畫布</button>
-        <button class="tool" onclick="saveDesign()">儲存設計</button>
+        <button class="tool" onclick="setTool('lock')">🔒 鎖</button>
+        <button class="tool" onclick="setTool('sensor')">📡 感應器</button>
+        <button class="tool" onclick="clearCanvas()">🧹 清除畫布</button>
+        <button class="tool" onclick="saveDesign()">💾 儲存設計</button>
     </div>
     
     <div id="canvas-container">
         <canvas id="designCanvas" width="800" height="500"></canvas>
     </div>
     
-    <h2>載入存檔</h2>
-    <select id="save-list"></select>
-    <button onclick="loadDesign()">載入</button>
+    <h2 style="text-align: center;">📂 載入存檔</h2>
+    <div style="text-align: center;">
+        <select id="save-list"></select>
+        <button onclick="loadDesign()">📥 載入</button>
+    </div>
 
     <script>
         let canvas = document.getElementById('designCanvas');
@@ -77,8 +75,9 @@
         });
         
         function placeItem(x, y, type) {
-            ctx.fillStyle = (type === 'lock') ? 'red' : 'blue';
-            ctx.fillRect(x - 5, y - 5, 10, 10);
+            let emoji = (type === 'lock') ? '🔒' : '📡';
+            ctx.font = "20px Arial";
+            ctx.fillText(emoji, x - 10, y + 10);
         }
         
         function saveDesign() {
@@ -116,8 +115,6 @@
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-        
-        document.querySelector('.tool:last-child').addEventListener('click', clearCanvas);
         
         updateSaveList();
     </script>
