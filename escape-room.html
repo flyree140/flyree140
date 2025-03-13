@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>密室逃脫</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #toolbar { display: flex; gap: 10px; padding: 10px; }
+        .tool { cursor: pointer; padding: 5px; border: 1px solid black; background: lightgray; }
+        #canvas-container { position: relative; }
+        canvas { border: 1px solid black; }
+        #save-list { margin-top: 10px; }
+    </style>
 </head>
 <body>
     <nav>
@@ -17,5 +25,100 @@
 
     <h1>密室逃脫主題</h1>
     <p>這裡是關於密室逃脫的介紹...</p>
+    <h1>密室逃脫設計工具</h1>
+    
+    <div id="toolbar">
+        <button class="tool" onclick="setTool('draw')">繪製牆壁</button>
+        <button class="tool" onclick="setTool('lock')">鎖</button>
+        <button class="tool" onclick="setTool('sensor')">感應器</button>
+        <button class="tool" onclick="setTool('clear')">清除畫布</button>
+        <button class="tool" onclick="saveDesign()">儲存設計</button>
+    </div>
+    
+    <div id="canvas-container">
+        <canvas id="designCanvas" width="800" height="500"></canvas>
+    </div>
+    
+    <h2>載入存檔</h2>
+    <select id="save-list"></select>
+    <button onclick="loadDesign()">載入</button>
+
+    <script>
+        let canvas = document.getElementById('designCanvas');
+        let ctx = canvas.getContext('2d');
+        let currentTool = 'draw';
+        let isDrawing = false;
+        let savedDesigns = JSON.parse(localStorage.getItem('escape_room_designs')) || {};
+        
+        function setTool(tool) {
+            currentTool = tool;
+        }
+        
+        canvas.addEventListener('mousedown', (e) => {
+            if (currentTool === 'draw') {
+                isDrawing = true;
+                ctx.beginPath();
+                ctx.moveTo(e.offsetX, e.offsetY);
+            } else {
+                placeItem(e.offsetX, e.offsetY, currentTool);
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing && currentTool === 'draw') {
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+            }
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+        });
+        
+        function placeItem(x, y, type) {
+            ctx.fillStyle = (type === 'lock') ? 'red' : 'blue';
+            ctx.fillRect(x - 5, y - 5, 10, 10);
+        }
+        
+        function saveDesign() {
+            let saveName = prompt('請輸入存檔名稱：');
+            if (!saveName) return;
+            savedDesigns[saveName] = canvas.toDataURL();
+            localStorage.setItem('escape_room_designs', JSON.stringify(savedDesigns));
+            updateSaveList();
+        }
+        
+        function updateSaveList() {
+            let saveList = document.getElementById('save-list');
+            saveList.innerHTML = '';
+            Object.keys(savedDesigns).forEach(name => {
+                let option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                saveList.appendChild(option);
+            });
+        }
+        
+        function loadDesign() {
+            let saveList = document.getElementById('save-list');
+            let selectedSave = saveList.value;
+            if (selectedSave && savedDesigns[selectedSave]) {
+                let img = new Image();
+                img.src = savedDesigns[selectedSave];
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                };
+            }
+        }
+        
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        document.querySelector('.tool:last-child').addEventListener('click', clearCanvas);
+        
+        updateSaveList();
+    </script>
 </body>
 </html>
