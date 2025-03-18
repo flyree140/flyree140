@@ -42,8 +42,7 @@
             width: 800px;
             height: 500px;
             /* 搜尋關鍵字: "haunted room dark" */
-            background: url('https://media.istockphoto.com/id/998252956/photo/interrogation-room.jpg?s=612x612&w=0&k=20&c=Gp1DGJGp_oFLYB4VvZkhFWI0c6_Bt4bw8_8xbUJzajw=') no-repeat center;
-            background-size: cover;
+            background: #222; /* 預設背景，若圖片失效 */
             border: 3px dashed #4a2a00;
             overflow: hidden;
             transition: filter 0.5s;
@@ -53,75 +52,23 @@
             position: absolute;
             cursor: pointer;
             transition: all 0.3s;
+            background: #333; /* 預設顏色 */
         }
 
-        #painting { 
-            top: 50px; left: 50px; width: 100px; height: 150px; 
-            /* 搜尋關鍵字: "old painting portrait" */
-            background: url('https://cdnb.artstation.com/p/assets/images/images/004/276/281/large/james-hill-the-dark-mansion-copy.jpg?1481927614') no-repeat center; 
-            background-size: cover; 
-        }
-        #bookshelf { 
-            bottom: 50px; right: 50px; width: 150px; height: 200px; 
-            /* 搜尋關鍵字: "old bookshelf dusty" */
-            background: url('https://p.turbosquid.com/ts-thumb/09/sLFldC/W6/old_dusty_bookshelf_render_1/jpg/1653220370/1920x1080/fit_q87/d5652ceafb6a47d2f706cbd61574276b21602b8e/old_dusty_bookshelf_render_1.jpg') no-repeat center; 
-            background-size: cover; 
-        }
-        #candlestick { 
-            top: 200px; left: 300px; width: 50px; height: 100px; 
-            /* 搜尋關鍵字: "candlestick vintage" */
-            background: url('https://images.unsplash.com/photo-1601746785012-3721351e6592') no-repeat center; 
-            background-size: cover; 
-        }
-        #window { 
-            top: 20px; right: 150px; width: 100px; height: 150px; 
-            /* 搜尋關鍵字: "old window dark" */
-            background: url('https://images.unsplash.com/photo-1600585154526-990dced4db0d') no-repeat center; 
-            background-size: cover; 
-        }
-        #rug { 
-            bottom: 100px; left: 200px; width: 200px; height: 100px; 
-            /* 搜尋關鍵字: "old rug dusty" */
-            background: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c') no-repeat center; 
-            background-size: cover; 
-        }
-        #clock { 
-            top: 50px; right: 300px; width: 80px; height: 80px; 
-            /* 搜尋關鍵字: "vintage clock" */
-            background: url('https://images.unsplash.com/photo-1575550959106-5a7defe28b56') no-repeat center; 
-            background-size: cover; 
-        }
-        #chair { 
-            bottom: 150px; left: 400px; width: 100px; height: 150px; 
-            /* 搜尋關鍵字: "old chair creepy" */
-            background: url('https://images.unsplash.com/photo-1597077450287-2703e7f90e57') no-repeat center; 
-            background-size: cover; 
-        }
-        #door { 
-            bottom: 50px; right: 200px; width: 100px; height: 200px; 
-            /* 搜尋關鍵字: "old wooden door" */
-            background: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c') no-repeat center; 
-            background-size: cover; 
-        }
-        #web { 
-            top: 10px; left: 10px; width: 80px; height: 80px; 
-            /* 搜尋關鍵字: "spider web closeup" */
-            background: url('https://images.unsplash.com/photo-1503331843-0ab5e01f6bd7') no-repeat center; 
-            background-size: cover; 
-        }
-        #shadow { 
-            position: absolute; width: 50px; height: 100px; 
-            background: rgba(0, 0, 0, 0.5); border-radius: 50%; 
-        }
+        #painting { top: 50px; left: 50px; width: 100px; height: 150px; background: url('https://media.istockphoto.com/id/998252956/photo/interrogation-room.jpg?s=612x612&w=0&k=20&c=Gp1DGJGp_oFLYB4VvZkhFWI0c6_Bt4bw8_8xbUJzajw=') no-repeat center; /* 搜尋關鍵字: "old painting portrait" */ }
+        #bookshelf { bottom: 50px; right: 50px; width: 150px; height: 200px; background-image: url(bookshelf.png); /* 搜尋關鍵字: "old bookshelf dusty" */ }
+        #candlestick { top: 200px; left: 300px; width: 50px; height: 100px;/* 搜尋關鍵字: "candlestick vintage" */ }
+        #window { top: 20px; right: 150px; width: 100px; height: 150px; /* 搜尋關鍵字: "old window dark" */ }
+        #rug { bottom: 100px; left: 200px; width: 200px; height: 100px; /* 搜尋關鍵字: "old rug dusty" */ }
+        #clock { top: 50px; right: 300px; width: 80px; height: 80px;  background-image: url(clock.png); /* 搜尋關鍵字: "vintage clock" */ }
+        #chair { bottom: 150px; left: 400px; width: 100px; height: 150px; /* 搜尋關鍵字: "old chair creepy" */ }
+        #door { bottom: 50px; right: 200px; width: 100px; height: 200px; /* 搜尋關鍵字: "old wooden door" */ }
+        #web { top: 10px; left: 10px; width: 80px; height: 80px; /* 搜尋關鍵字: "spider web closeup" */ }
+        #shadow { position: absolute; width: 50px; height: 100px; background: rgba(0, 0, 0, 0.5); border-radius: 50%; }
 
         .hidden { display: none; }
 
-        #puzzle, #ar-hint, #hint { 
-            margin-top: 20px; 
-            background: rgba(30, 0, 0, 0.8); 
-            padding: 15px; 
-            border-radius: 10px; 
-        }
+        #puzzle, #ar-hint, #hint { margin-top: 20px; background: rgba(30, 0, 0, 0.8); padding: 15px; border-radius: 10px; }
 
         input, button {
             padding: 10px;
@@ -133,19 +80,11 @@
 
         button:hover { background: #ff5555; color: #000; }
 
-        .ghost { 
-            position: absolute; width: 50px; height: 50px; 
-            opacity: 0.5; animation: float 8s infinite ease-in-out; 
-            z-index: 0; color: #ccc; font-size: 20px; text-align: center; 
-        }
+        .ghost { position: absolute; width: 50px; height: 50px; opacity: 0.5; animation: float 8s infinite ease-in-out; z-index: 0; color: #ccc; font-size: 20px; text-align: center; }
         #ghost1 { top: 10%; left: 20%; animation-delay: 0s; }
         #ghost2 { top: 30%; left: 70%; animation-delay: 2s; }
 
-        .mist { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: linear-gradient(transparent, rgba(255, 255, 255, 0.1)); 
-            opacity: 0.3; animation: mistMove 15s infinite; z-index: 0; 
-        }
+        .mist { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(transparent, rgba(255, 255, 255, 0.1)); opacity: 0.3; animation: mistMove 15s infinite; z-index: 0; }
 
         @keyframes glow { from { text-shadow: 0 0 10px #ff0000; } to { text-shadow: 0 0 20px #ff5555; } }
         @keyframes flicker { 0%, 100% { filter: brightness(0.6); } 50% { filter: brightness(0.8); } }
@@ -155,19 +94,10 @@
     </style>
 </head>
 <body>
-    <nav>
-        <a href="index.html">首頁</a>
-        <a href="escape-room.html">密室逃脫</a>
-        <a href="shop.html">購物網站</a>
-        <a href="about.html">關於我們</a>
-        <a href="contact.html">聯絡我們</a>
-    </nav>
     <div class="mist"></div>
     <div class="ghost" id="ghost1">👻</div>
     <div class="ghost" id="ghost2">👻</div>
     <div class="container">
-
-    <h1 style="text-align: center;">密室逃脫設計工具</h1>
         <h1>歡迎來到被詛咒的古宅</h1>
         <p id="intro">你被困在一座廢棄的宅邸，空氣中瀰漫著詭異的低語。找到線索，解開謎團，逃出生天。</p>
         
@@ -201,93 +131,99 @@
     </div>
 
     <script>
-        const room = document.querySelector('.room');
-        const painting = document.getElementById('painting');
-        const bookshelf = document.getElementById('bookshelf');
-        const candlestick = document.getElementById('candlestick');
-        const window = document.getElementById('window');
-        const rug = document.getElementById('rug');
-        const clock = document.getElementById('clock');
-        const chair = document.getElementById('chair');
-        const door = document.getElementById('door');
-        const web = document.getElementById('web');
-        const shadow = document.getElementById('shadow');
+        // 確保DOM載入完成後綁定事件
+        document.addEventListener('DOMContentLoaded', () => {
+            const room = document.querySelector('.room');
+            const painting = document.getElementById('painting');
+            const bookshelf = document.getElementById('bookshelf');
+            const candlestick = document.getElementById('candlestick');
+            const window = document.getElementById('window');
+            const rug = document.getElementById('rug');
+            const clock = document.getElementById('clock');
+            const chair = document.getElementById('chair');
+            const door = document.getElementById('door');
+            const web = document.getElementById('web');
+            const shadow = document.getElementById('shadow');
 
-        painting.addEventListener('dragend', (e) => {
-            if (e.clientX > 500 && e.clientY < 300) {
-                document.getElementById('puzzle').classList.remove('hidden');
-                playSound('whisper');
-            }
+            // 畫框拖曳
+            painting.addEventListener('dragend', (e) => {
+                if (e.clientX > 500 && e.clientY < 300) {
+                    document.getElementById('puzzle').classList.remove('hidden');
+                    console.log('畫框觸發');
+                }
+            });
+
+            // 書架點擊
+            bookshelf.addEventListener('click', () => {
+                bookshelf.style.transform = 'translateY(20px)';
+                document.getElementById('hint').classList.remove('hidden');
+                console.log('書架觸發');
+            });
+
+            // 燭台懸浮
+            candlestick.addEventListener('mouseover', () => {
+                room.style.filter = 'brightness(1)';
+                console.log('燭台點亮');
+            });
+            candlestick.addEventListener('mouseout', () => {
+                room.style.filter = 'brightness(0.6)';
+            });
+
+            // 窗戶雙擊
+            window.addEventListener('dblclick', () => {
+                document.getElementById('ar-hint').classList.remove('hidden');
+                console.log('窗戶觸發');
+            });
+
+            // 地毯拖曳
+            rug.addEventListener('dragend', (e) => {
+                rug.style.transform = 'translateX(100px)';
+                alert('地毯下寫著：CANDLE');
+                console.log('地毯觸發');
+            });
+
+            // 時鐘點擊
+            clock.addEventListener('click', () => {
+                clock.style.transform = 'rotate(360deg)';
+                console.log('時鐘觸發');
+            });
+
+            // 椅子點擊停止搖晃
+            chair.addEventListener('click', () => {
+                chair.style.animation = 'none';
+                console.log('椅子觸發');
+            });
+
+            // 蜘蛛網抖動
+            web.addEventListener('mouseover', () => {
+                web.style.animation = 'shake 0.5s infinite';
+                console.log('蜘蛛網觸發');
+            });
+            web.addEventListener('mouseout', () => {
+                web.style.animation = 'none';
+            });
+
+            // 影子隨滑鼠移動
+            document.addEventListener('mousemove', (e) => {
+                shadow.style.left = `${e.clientX - 25}px`;
+                shadow.style.top = `${e.clientY - 50}px`;
+            });
         });
 
-        bookshelf.addEventListener('click', () => {
-            bookshelf.style.transform = 'translateY(20px)';
-            document.getElementById('hint').classList.remove('hidden');
-            playSound('creak');
-        });
-
-        candlestick.addEventListener('mouseover', () => {
-            room.style.filter = 'brightness(1)';
-            playSound('whisper');
-        });
-        candlestick.addEventListener('mouseout', () => {
-            room.style.filter = 'brightness(0.6)';
-        });
-
-        window.addEventListener('dblclick', () => {
-            document.getElementById('ar-hint').classList.remove('hidden');
-            playSound('creak');
-        });
-
-        rug.addEventListener('dragend', (e) => {
-            rug.style.transform = 'translateX(100px)';
-            alert('地毯下寫著：CANDLE');
-            playSound('whisper');
-        });
-
-        clock.addEventListener('click', () => {
-            clock.style.transform = 'rotate(360deg)';
-            playSound('unlock');
-        });
-
-        chair.addEventListener('click', () => {
-            chair.style.animation = 'none';
-            playSound('creak');
-        });
-
+        // 檢查密碼
         function checkCode() {
             const code = document.getElementById('code-input').value.toLowerCase();
             const result = document.getElementById('result');
             if (code === 'candle') {
                 result.textContent = '門開了！你逃脫了！';
                 result.style.color = '#00ff00';
-                playSound('unlock');
+                console.log('解鎖成功');
                 setTimeout(() => alert('恭喜逃脫！'), 2000);
             } else {
                 result.textContent = '密碼錯誤，低語越來越近...';
                 result.style.color = '#ff5555';
-                playSound('whisper');
+                console.log('解鎖失敗');
             }
-        }
-
-        web.addEventListener('mouseover', () => {
-            web.style.animation = 'shake 0.5s infinite';
-        });
-        web.addEventListener('mouseout', () => {
-            web.style.animation = 'none';
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            shadow.style.left = `${e.clientX - 25}px`;
-            shadow.style.top = `${e.clientY - 50}px`;
-        });
-
-        function playSound(type) {
-            const audio = new Audio();
-            if (type === 'whisper') audio.src = 'https://freesound.org/data/previews/213/213186_3782496-lq.mp3';
-            if (type === 'creak') audio.src = 'https://freesound.org/data/previews/316/316847_4939433-lq.mp3';
-            if (type === 'unlock') audio.src = 'https://freesound.org/data/previews/270/270301_5123851-lq.mp3';
-            audio.play().catch(err => console.log('音效載入失敗:', err));
         }
     </script>
 </body>
