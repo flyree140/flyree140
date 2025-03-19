@@ -41,16 +41,27 @@
             transition: all 0.3s;
         }
 
-        #painting { top: 60px; left: 230px; width: 130px; height: 180px; }
-        #bookshelf { bottom: 50px; right: 80px; width: 300px; height: 400px; }
-        #candlestick { top: 370px; left: 390px; width: 50px; height: 110px; }
-        #window { top: 80px; right: 480px; width: 160px; height: 180px; }
+        #painting { top: 60px; left: 300px; width: 130px; height: 180px; }
+        #bookshelf { bottom: 50px; left: 50px; width: 280px; height: 400px; }
+        #candlestick { top: 370px; left: 150px; width: 50px; height: 110px; }
+        #window { top: 80px; right: 420px; width: 160px; height: 180px; }
         #rug { bottom: 50px; left: 280px; width: 240px; height: 140px; }
-        #clock { top: 60px; right: 700px; width: 160px; height: 130px; }
+        #clock { top: 30px; right: 50px; width: 160px; height: 130px; }
         #chair { bottom: 180px; left: 620px; width: 160px; height: 200px; }
         #door { bottom: 20px; right: 780px; width: 160px; height: 260px; }
         
         .hidden { display: none; }
+        
+        .hidden-number {
+            position: absolute;
+            font-size: 50px;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0);
+            transition: color 0.5s;
+        }
+
+        #number1 { top: 200px; right: 545px; filter: invert(70%);}
+        #number2 { top: 100px; right: 700px; filter: invert(20%);}
 
         #successMessage {
             display: none;
@@ -69,15 +80,20 @@
 <body>
     <div class="container">
         <h1>歡迎來到被詛咒的古宅</h1>
-        <div class="room">
-            <div class="room-item" id="painting" onclick="showMessage('你發現了一幅舊畫，它似乎藏著某種暗示。')"></div>
-            <div class="room-item" id="bookshelf" onclick="showMessage('書架上塵封的書本裡，有張泛黃的紙條。')"></div>
-            <div class="room-item" id="candlestick" onclick="showMessage('燭台閃爍著微弱的光芒，照亮了角落的一個暗號。')"></div>
-            <div class="room-item" id="window" ondblclick="showMessage('窗戶外似乎有什麼在動…')"></div>
-            <div class="room-item" id="rug" ondragend="showMessage('地毯底下有些東西...')"></div>
-            <div class="room-item" id="clock" onclick="showMessage('時鐘的指針停止了，顯示著某個奇怪的時間。')"></div>
-            <div class="room-item" id="chair" onclick="showMessage('椅子微微晃動，像是剛有人坐過。')"></div>
+        <p>找到線索來解開密碼，才能打開門逃脫！</p>
+        <button onclick="toggleFilter()">切換黑白模式</button>
+        <div class="room" id="room">
+            <div class="room-item" id="painting" onclick="showMessage('畫中女子的目光似乎指向燭台...')"></div>
+            <div class="room-item" id="bookshelf" onclick="showMessage('書架上塵封的書本裡，有張泛黃的紙條，上面寫著：時間靜止在鐘上')"></div>
+            <div class="room-item" id="candlestick" onclick="showMessage('燭台閃爍著微弱的光芒，照亮了角落的一個暗號：CANDLE')"></div>
+            <div class="room-item" id="window" ondblclick="showMessage('窗戶外一片漆黑，但玻璃上似乎寫著東西...')"></div>
+            <div class="room-item" id="rug" ondragend="showMessage('地毯底下露出一個刻著時間的金屬牌...')"></div>
+            <div class="room-item" id="clock" onclick="showMessage('時鐘的指針停止在某個時間點，它的秘密是...')"></div>
+            <div class="room-item" id="chair" onclick="showMessage('椅子微微晃動，像是剛有人坐過，座墊下有張紙條...')"></div>
             <div class="room-item" id="door" onclick="enterCode()"></div>
+            
+            <div class="hidden-number" id="number1">4237</div>
+            <div class="hidden-number" id="number2">19</div>
         </div>
     </div>
 
@@ -94,6 +110,19 @@
                 document.getElementById('successMessage').style.display = 'block';
             } else {
                 alert('密碼錯誤，請繼續尋找線索！');
+            }
+        }
+
+        function toggleFilter() {
+            let room = document.getElementById('room');
+            let numbers = document.querySelectorAll('.hidden-number');
+            if (room.style.filter === 'grayscale(100%)') {
+                room.style.filter = 'none';
+                numbers.forEach(num => num.style.color = 'rgba(255, 255, 255, 0)');
+            } else {
+                room.style.filter = 'grayscale(100%)';
+                numbers.forEach(num => num.style.color = 'white');
+                alert('你發現牆上隱藏了一串數字！');
             }
         }
     </script>
