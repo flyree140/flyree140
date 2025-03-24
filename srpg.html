@@ -34,12 +34,16 @@
       justify-content: center;
       align-items: center;
       font-size: 1.2em;
+      cursor: pointer;
     }
     .hero {
       background-color: #4caf50;
     }
     .enemy {
       background-color: #f44336;
+    }
+    .highlight {
+      background-color: #2196f3 !important;
     }
     button {
       padding: 10px 20px;
@@ -50,23 +54,30 @@
   </style>
 </head>
 <body>
-  <h1>天地劫 SRPG 網頁版 - 初始戰棋試玩</h1>
+  <h1>天地劫 SRPG 網頁版 - 互動版</h1>
   <div id="game-board"></div>
   <button onclick="resetBoard()">重置棋盤</button>
 
   <script>
     const board = document.getElementById("game-board");
+    let heroPos = { row: 0, col: 0 };
+    let selected = false;
 
     function createTile(row, col) {
       const div = document.createElement("div");
       div.classList.add("tile");
-      if (row === 0 && col === 0) {
+      div.dataset.row = row;
+      div.dataset.col = col;
+
+      if (row === heroPos.row && col === heroPos.col) {
         div.classList.add("hero");
         div.innerText = "我";
       } else if ((row === 2 && col === 2) || (row === 4 && col === 5)) {
         div.classList.add("enemy");
         div.innerText = "敵";
       }
+
+      div.addEventListener("click", () => handleClick(row, col));
       board.appendChild(div);
     }
 
@@ -77,9 +88,48 @@
           createTile(row, col);
         }
       }
+      if (selected) highlightMoves();
+    }
+
+    function handleClick(row, col) {
+      if (row === heroPos.row && col === heroPos.col) {
+        selected = !selected;
+        renderBoard();
+      } else if (selected && isAdjacent(row, col)) {
+        heroPos = { row, col };
+        selected = false;
+        renderBoard();
+      }
+    }
+
+    function isAdjacent(r, c) {
+      const dr = Math.abs(heroPos.row - r);
+      const dc = Math.abs(heroPos.col - c);
+      return (dr + dc === 1);
+    }
+
+    function highlightMoves() {
+      const directions = [
+        { dr: -1, dc: 0 },
+        { dr: 1, dc: 0 },
+        { dr: 0, dc: -1 },
+        { dr: 0, dc: 1 }
+      ];
+      directions.forEach(d => {
+        const newRow = heroPos.row + d.dr;
+        const newCol = heroPos.col + d.dc;
+        if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+          const tile = document.querySelector(`[data-row='${newRow}'][data-col='${newCol}']`);
+          if (!tile.classList.contains("enemy")) {
+            tile.classList.add("highlight");
+          }
+        }
+      });
     }
 
     function resetBoard() {
+      heroPos = { row: 0, col: 0 };
+      selected = false;
       renderBoard();
     }
 
