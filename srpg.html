@@ -9,7 +9,7 @@
 body{margin:0;background:#0e1217;color:#e6edf3;font-family:system-ui,"Noto Sans TC","Microsoft JhengHei",sans-serif}
 header{padding:10px 14px;border-bottom:1px solid #263040;background:#10161f;display:flex;gap:10px;align-items:center;justify-content:space-between}
 h1{margin:0;font-size:16px}
-main{display:grid;grid-template-columns:auto 380px;gap:10px;padding:10px}
+main{display:grid;grid-template-columns:auto 400px;gap:10px;padding:10px}
 #board{width:calc(var(--cell)*var(--w));height:calc(var(--cell)*var(--h));position:relative;border:1px solid #263040;border-radius:10px;background:
 linear-gradient(#263040 1px,transparent 1px) 0 0/var(--cell) var(--cell),
 linear-gradient(90deg,#263040 1px,transparent 1px) 0 0/var(--cell) var(--cell),#0b0f14}
@@ -26,16 +26,41 @@ linear-gradient(90deg,#263040 1px,transparent 1px) 0 0/var(--cell) var(--cell),#
 .atk{outline:2px solid rgba(255,120,120,.95);background:rgba(255,80,80,.12)}
 .blk{position:absolute;left:0;top:0;width:100%;height:100%;background:#2a3344;box-shadow:inset 0 0 0 2px #3e4a62;border-radius:8px}
 .terrain-fire{position:absolute;left:0;top:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(255,120,0,.18),rgba(255,0,0,.18));box-shadow:inset 0 0 0 2px rgba(255,120,0,.5);border-radius:8px}
+
+/* 右側欄 */
 aside{border:1px solid #263040;background:#0b0f14;border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
 .panel{padding:10px 10px 0;display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px solid #334156;border-radius:999px;padding:4px 8px;font-size:12px}
+.section{padding:10px;border-top:1px solid #263040}
+.section h3{margin:0 0 6px 0;font-size:13px;letter-spacing:.5px;color:#9ecbff;display:flex;align-items:center;gap:6px}
+.kv{display:flex;gap:6px;flex-wrap:wrap}
+.kv .tag{border:1px solid #334156;background:#101829;padding:3px 8px;border-radius:8px;font-size:12px}
+hr.sep{border:0;border-top:1px dashed #2b3a50;margin:8px 0}
+
+/* Info卡片 */
+#info{padding:10px;border-top:1px solid #263040}
+.info-card{border:1px solid #2a3a52;background:#0f1520;border-radius:10px;overflow:hidden}
+.info-head{padding:10px 12px;background:linear-gradient(180deg,#0f1b2a,#0b111b);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #233044}
+.info-head .name{font-weight:700}
+.info-head .stat{font-size:12px;opacity:.9}
+.info-body{padding:8px 12px}
+.skill{padding:8px;border:1px solid #22304a;border-radius:8px;background:#0b111b;margin:6px 0}
+.skill b{font-size:13px}
+.skill .meta{font-size:12px;opacity:.85}
+.soul{padding:8px;border:1px solid #42314a;background:#17111b;border-radius:8px;margin-top:8px}
+
+/* 動作列/紀錄 */
 #actions{display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px;border-top:1px solid #263040}
 .btn{background:#1a2330;border:1px solid #3a475c;color:#e6edf3;padding:7px 10px;border-radius:8px;cursor:pointer}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+#actionBar{border-top:1px solid #263040;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.dot{padding:2px 8px;border:1px solid #334156;border-radius:999px;font-size:12px}
+.dot.done{background:#213045;border-color:#3e6e9f}
+.dot.foe{background:#3b2222;border-color:#9f3e3e}
 #log{flex:1;padding:10px;overflow:auto;border-top:1px solid #263040;font-family:ui-monospace,Menlo,Consolas,monospace;max-height:220px}
 #turn{padding:8px 10px;border-top:1px solid #263040;display:flex;justify-content:space-between;align-items:center}
-label.switch{display:inline-flex;align-items:center;gap:6px;font-size:13px}
-input[type=checkbox]{transform:scale(1.2)}
+
+/* modal/表格 */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center}
 .card{background:#0f1520;border:1px solid #334156;border-radius:12px;min-width:980px;max-width:95vw}
 .card h2{margin:0;padding:12px 14px;border-bottom:1px solid #334156;font-size:16px}
@@ -46,11 +71,8 @@ select{background:#0b0f14;color:#e6edf3;border:1px solid #3a475c;border-radius:6
 input[type=number]{width:70px;background:#0b0f14;color:#e6edf3;border:1px solid #3a475c;border-radius:6px;padding:4px}
 .skills{display:flex;gap:4px;flex-wrap:wrap}
 .small{font-size:12px;opacity:.8}
-/* 行動條 */
-#actionBar{border-top:1px solid #263040;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
-.dot{padding:2px 8px;border:1px solid #334156;border-radius:999px;font-size:12px}
-.dot.done{background:#213045;border-color:#3e6e9f}
-.dot.foe{background:#3b2222;border-color:#9f3e3e}
+.bad{color:#ff9aa3}
+.good{color:#9cffc2}
 </style>
 </head>
 <body>
@@ -61,9 +83,6 @@ input[type=number]{width:70px;background:#0b0f14;color:#e6edf3;border:1px solid 
     <button id="toggleEdit" class="btn">地形編輯：關</button>
   </div>
   <div style="display:flex;gap:8px;align-items:center">
-    <label class="switch" title="開：同一次行動只能移動或行動其一">
-      <input id="ruleStrict" type="checkbox" checked> 嚴格：移動或行動（二擇一）
-    </label>
     <button id="reset" class="btn">重開一局</button>
   </div>
 </header>
@@ -81,11 +100,15 @@ input[type=number]{width:70px;background:#0b0f14;color:#e6edf3;border:1px solid 
       <div class="chip">神▶冰雷火；神◀光暗幽</div>
       <div class="chip">魔▶光暗幽；魔◀冰雷火</div>
     </div>
+
+    <!-- 右側角色資訊 -->
+    <div id="info" class="section"></div>
+
     <div id="actions"></div>
 
-    <div id="actionBar">
+    <div id="actionBar" class="section">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <b>行動條</b>
+        <h3>📜 行動條</h3>
         <button id="toggleLog" class="btn">收合紀錄</button>
       </div>
       <div class="small">我方</div>
@@ -115,11 +138,12 @@ input[type=number]{width:70px;background:#0b0f14;color:#e6edf3;border:1px solid 
         <button id="randomBlocks" class="btn">隨機障礙</button>
       </div>
       <table>
-        <thead><tr><th>槽位</th><th>陣營</th><th>職業/角色</th><th>屬性</th><th>魂石（套裝三枚）</th><th>攜帶技能（最多3）</th></tr></thead>
+        <thead><tr><th>槽位</th><th>陣營</th><th>來源</th><th>職業/角色</th><th>屬性</th><th>魂石（三枚）</th><th>攜帶技能（最多3）</th></tr></thead>
         <tbody id="setupRows"></tbody>
       </table>
       <div class="small" style="margin-top:6px">
-        魂石使用「三枚」套裝效果（等同已裝滿 3 顆）。蕭熇為專屬角色條目；驚飛羽示範技能「小而無相」僅顯示說明。
+        「來源」可選 <b>職業</b> 或 <b>角色</b>；角色的技能池以該角色定義為準。<br>
+        魂石使用「三枚」套裝效果（等同已裝滿 3 顆）。
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
         <button id="randTeam" class="btn">隨機編隊</button>
@@ -138,16 +162,16 @@ document.documentElement.style.setProperty('--h', GRID_H);
 const CELL=60;
 const board=document.getElementById("board"), actions=document.getElementById("actions");
 const logEl=document.getElementById("log"), turnEl=document.getElementById("turnWho"), sizeTag=document.getElementById("sizeTag"), roundEl=document.getElementById("roundNum");
-const ruleStrictEl=document.getElementById("ruleStrict");
+
 let EDIT_MODE=false;
+/* 規則預設關（移動與行動可同回合皆做）→ 你之前的開關已移除 */
+let RULE_MOVE_OR_ACT=false;
 
 const ATTR=["光","暗","幽","雷","冰","火","神","魔"];
 const ATTR_COLOR={光:"#f6d44a",暗:"#b390ff",幽:"#7fd0ff",雷:"#79ff8a",冰:"#a7e3ff",火:"#ff7a6e",神:"#ffdca8",魔:"#ffb3d1"};
 const ADV=1.25, DIS=0.8;
 const TRIAD1=["光","暗","幽"], TRIAD2=["雷","冰","火"];
 const G1=new Set(TRIAD1), G2=new Set(TRIAD2);
-let RULE_MOVE_OR_ACT=true; ruleStrictEl.onchange=()=>{ RULE_MOVE_OR_ACT=ruleStrictEl.checked; log(`規則：移動或行動（二擇一）${RULE_MOVE_OR_ACT?'開':'關'}`); };
-
 function colorAttr(a){return ATTR_COLOR[a]||"#fff";}
 function inside(x,y){return x>=0&&y>=0&&x<GRID_W&&y<GRID_H;}
 function neighbors(x,y){return[{x:x+1,y},{x:x-1,y},{x,y:y+1},{x,y:y-1}].filter(p=>inside(p.x,p.y));}
@@ -172,7 +196,7 @@ function drawBlocks(){for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++)if(isBlo
 function lineOfSight(ax,ay,bx,by){let x=ax,y=ay,dx=Math.abs(bx-ax),dy=Math.abs(by-ay),sx=ax<bx?1:-1,sy=ay<by?1:-1,err=dx-dy;
   while(!(x===bx&&y===by)){const e2=2*err;if(e2>-dy){err-=dy;x+=sx}if(e2<dx){err+=dx;y+=sy}if(x===bx&&y===by)break;if(isBlocked(x,y)||unitAt(x,y))return false;}return true}
 
-/* ======= 可持續地形：炎獄（站上去回合結束掉血） ======= */
+/* ======= 可持續地形：炎獄 ======= */
 let terrains=[]; // {x,y,type:'fire',turns}
 function addTerrain(x,y,type,turns){ if(!inside(x,y) || isBlocked(x,y)) return; terrains.push({x,y,type,turns}); }
 function decayTerrains(){ terrains.forEach(t=>t.turns--); terrains=terrains.filter(t=>t.turns>0); }
@@ -195,62 +219,121 @@ const slots=[
   {id:"E1", side:"enemy",x:GRID_W-1,y:GRID_H-2},{id:"E2", side:"enemy",x:GRID_W-2,y:GRID_H-1},{id:"E3", side:"enemy",x:GRID_W-3,y:GRID_H-3},
 ];
 
-/* >>> MISSING HELPER FIX <<< */
+/* 行動開始快照（供切換角色時還原） */
 function setActionStart(u){
-  // Start-of-action snapshot and per-action state reset
   u.actionStart = { x: u.x, y: u.y };
   u.hasMoved = false;
   u.bonusMove = 0;
   if (!u.tags) u.tags = {};
   u.tags.moved2 = 0;
 }
+function rollbackToActionStart(u){
+  if(!u || !u.actionStart) return;
+  if(!u.hasActed){ // 尚未完成本次行動 → 還原
+    const back=u.actionStart;
+    u.x=back.x; u.y=back.y;
+    u.hasMoved=false; u.bonusMove=0; u.tags.moved2=0;
+    log(`${u.id} 取消未結束移動，回到 (${u.x},${u.y})`);
+  }
+}
 
 const JOBS={
-  "鐵衛":{move:3,min:1,max:1,hp:120,atk:24,def:18, skills:[
-    {id:"guard",name:"守護姿態",type:"self",cd:3,desc:"至下回合開始受傷-50%",use:(u)=>{u.tags.guard=1;log(`${u.id} 守護`)}},
-    {id:"taunt",name:"鐵壁嘲諷",type:"self",cd:3,desc:"本回合嘲諷",use:(u)=>{u.tags.taunt=1;log(`${u.id} 嘲諷`)}},
-    {id:"block",name:"盾擊",type:"attack",cd:2,range:"job",desc:"100%並使敵攻-30%（1回合）",use:(a,d)=>{d.tags.atkdown=1;hit(a,d,1)}},
+  /* isChar: false 為職業；true 為具名角色 */
+  "鐵衛":{isChar:false,move:3,min:1,max:1,hp:120,atk:24,def:18, skills:[
+    {id:"guard",name:"守護姿態",type:"self",cd:3,desc:"至下回合開始受傷-50%",use:(u)=>{u.tags.guard=1;log(`${u.id} 守護`); return true;}},
+    {id:"taunt",name:"鐵壁嘲諷",type:"self",cd:3,desc:"本回合嘲諷",use:(u)=>{u.tags.taunt=1;log(`${u.id} 嘲諷`); return true;}},
+    {id:"block",name:"盾擊",type:"attack",cd:2,range:"job",desc:"100%並使敵攻-30%（1回合）",use:(a,d)=>{d.tags.atkdown=1;hit(a,d,1)}}
   ]},
-  "俠客":{move:3,min:1,max:1,hp:100,atk:30,def:12, skills:[
+  "俠客":{isChar:false,move:3,min:1,max:1,hp:100,atk:30,def:12, skills:[
     {id:"combo",name:"連擊",type:"attack",cd:3,range:"job",desc:"兩段各80%",use:(a,d)=>{hit(a,d,0.8);if(!d.dead)hit(a,d,0.8)}},
     {id:"dashcut",name:"突進斬",type:"attack",cd:3,range:2,desc:"射程2；若本次移動≥2格，傷害+30%",use:(a,d)=>{const r=a.tags.moved2?1.3:1.0;hit(a,d,r)}},
     {id:"bleed",name:"破甲一擊",type:"attack",cd:3,range:"job",desc:"110%並使敵防-30%（1回合）",use:(a,d)=>{d.tags.defdown=1;hit(a,d,1.1)}},
-    {id:"light",name:"輕身",type:"self",cd:3,needPhase:"move",desc:"本次行動的移動力+2",use:(u)=>{u.bonusMove=(u.bonusMove||0)+2;log(`${u.id} 輕身+2`)}}]},
-  "咒師":{move:3,min:2,max:2,hp:90,atk:34,def:8, skills:[
+    {id:"light",name:"輕身",type:"self",cd:3,needPhase:"move",desc:"本次行動的移動力+2",use:(u)=>{u.bonusMove=(u.bonusMove||0)+2;log(`${u.id} 輕身+2`); return true;}}]},
+  "咒師":{isChar:false,move:3,min:2,max:2,hp:90,atk:34,def:8, skills:[
     {id:"bolt",name:"霜雷咒",type:"attack",cd:2,range:3,desc:"射程3；法術120%",use:(a,d)=>{hit(a,d,1.2)}},
     {id:"blast",name:"裂冰術",type:"attack",cd:3,range:3,desc:"射程3；法術140%",use:(a,d)=>{hit(a,d,1.4)}},
     {id:"slow",name:"冰縛",type:"attack",cd:3,range:3,desc:"80%並使移動-1（1回合）",use:(a,d)=>{hit(a,d,0.8);d.tags.slow=1}},
-    {id:"veil",name:"秘術護罩",type:"self",cd:3,desc:"獲得護盾=最大生命20%（1回合）",use:(u)=>{u.tags.shield=Math.floor(u.hpMax*0.2);log(`${u.id} 護盾+${u.tags.shield}`)}}]},
-  "祝由":{move:3,min:2,max:2,hp:95,atk:18,def:10, skills:[
-    {id:"heal",name:"回春",type:"heal",cd:2,range:2,val:40,desc:"射程2；回復我方單體 40",use:(a,t)=>{t.hp=Math.min(t.hpMax,t.hp+40);log(`${a.id} 治療 ${t.id} +40`);render()}},
-    {id:"cleanse",name:"祛痺",type:"self",cd:2,desc:"淨化自身減益",use:(u)=>{u.tags={...u.tags,atkdown:0,defdown:0,slow:0,stun:0};log(`${u.id} 淨化`) }},
-    {id:"haste",name:"迅捷",type:"self",cd:3,desc:"本回合移動力+1",use:(u)=>{u.bonusMove=(u.bonusMove||0)+1;log(`${u.id} 迅捷+1`) }},
-    {id:"rangeheal",name:"遠引回春",type:"heal",cd:3,range:3,val:30,desc:"射程3；回復我方單體 30",use:(a,t)=>{t.hp=Math.min(t.hpMax,t.hp+30);log(`${a.id} 治療 ${t.id} +30`);render()}}]},
-  "羽士":{move:3,min:2,max:2,hp:95,atk:28,def:10, skills:[
+    {id:"veil",name:"秘術護罩",type:"self",cd:3,desc:"獲得護盾=最大生命20%（1回合）",use:(u)=>{u.tags.shield=Math.floor(u.hpMax*0.2);log(`${u.id} 護盾+${u.tags.shield}`); return true;}}]},
+  "祝由":{isChar:false,move:3,min:2,max:2,hp:95,atk:18,def:10, skills:[
+    {id:"heal",name:"回春",type:"heal",cd:2,range:2,val:40,desc:"射程2；回復我方單體 40",use:(a,t)=>{t.hp=Math.min(t.hpMax,t.hp+40);log(`${a.id} 治療 ${t.id} +40`);render(); return true;}},
+    {id:"cleanse",name:"祛痺",type:"self",cd:2,desc:"淨化自身減益",use:(u)=>{u.tags={...u.tags,atkdown:0,defdown:0,slow:0,stun:0};log(`${u.id} 淨化`); return true;}},
+    {id:"haste",name:"迅捷",type:"self",cd:3,desc:"本回合移動力+1",use:(u)=>{u.bonusMove=(u.bonusMove||0)+1;log(`${u.id} 迅捷+1`); return true;}},
+    {id:"rangeheal",name:"遠引回春",type:"heal",cd:3,range:3,val:30,desc:"射程3；回復我方單體 30",use:(a,t)=>{t.hp=Math.min(t.hpMax,t.hp+30);log(`${a.id} 治療 ${t.id} +30`);render(); return true;}}]},
+  "羽士":{isChar:false,move:3,min:2,max:2,hp:95,atk:28,def:10, skills:[
     {id:"pierce",name:"貫通箭",type:"attack",cd:3,range:2,desc:"射程2；130%，無法近戰",use:(a,d)=>{hit(a,d,1.3)}},
-    {id:"aim",name:"瞄準",type:"self",cd:2,desc:"本回合遠程可無視視線 1 次",use:(u)=>{u.tags.aim=1;u.tags.aimCharges=1;log(`${u.id} 瞄準`) }},
+    {id:"aim",name:"瞄準",type:"self",cd:2,desc:"本回合遠程可無視視線 1 次",use:(u)=>{u.tags.aim=1;u.tags.aimCharges=1;log(`${u.id} 瞄準`); return true;}},
     {id:"repel",name:"驅散箭",type:"attack",cd:3,range:2,desc:"射程2；100%，先移除護盾",use:(a,d)=>{d.tags.shield=0;hit(a,d,1.0)}},
     {id:"split",name:"散射",type:"attack",cd:3,range:2,desc:"100%，另外對相鄰敵 90%",use:(a,d)=>{hit(a,d,0.9);const n=neighbors(d.x,d.y).map(p=>unitAt(p.x,p.y)).find(u=>u&&u.side!==a.side&&!u.dead);if(n)hit(a,n,0.9)}}]},
-  "御風":{move:5,min:1,max:1,hp:90,atk:32,def:9, skills:[
-    {id:"dash",name:"瞬步",type:"dash",cd:3,needPhase:"move",desc:"未移動時可用；本次行動移動力+2",use:(u)=>{u.bonusMove=(u.bonusMove||0)+2;log(`${u.id} 瞬步+2`) }},
+  "御風":{isChar:false,move:5,min:1,max:1,hp:90,atk:32,def:9, skills:[
+    {id:"dash",name:"瞬步",type:"dash",cd:3,needPhase:"move",desc:"未移動時可用；本次行動移動力+2",use:(u)=>{u.bonusMove=(u.bonusMove||0)+2;log(`${u.id} 瞬步+2`); return true;}},
     {id:"assass",name:"背襲",type:"attack",cd:3,range:"job",desc:"120% 近戰",use:(a,d)=>{hit(a,d,1.2)}},
-    {id:"smoke",name:"煙幕",type:"self",cd:3,desc:"本回合受傷-30%",use:(u)=>{u.tags.smoke=1;log(`${u.id} 煙幕`) }}]},
-  "鬥將":{move:4,min:1,max:1,hp:110,atk:34,def:12, skills:[
-    {id:"berserk",name:"戰意爆發",type:"buff",cd:3,desc:"下一擊傷害+50%且破甲50%（一次）",use:(u)=>{u.tags.berserk={bonus:0.5,pierce:0.5,charges:1};log(`${u.id} 戰意！`) }},
+    {id:"smoke",name:"煙幕",type:"self",cd:3,desc:"本回合受傷-30%",use:(u)=>{u.tags.smoke=1;log(`${u.id} 煙幕`); return true;}}]},
+  "鬥將":{isChar:false,move:4,min:1,max:1,hp:110,atk:34,def:12, skills:[
+    {id:"berserk",name:"戰意爆發",type:"buff",cd:3,desc:"下一擊傷害+50%且破甲50%（一次）",use:(u)=>{u.tags.berserk={bonus:0.5,pierce:0.5,charges:1};log(`${u.id} 戰意！`); return true;}},
     {id:"stun",name:"震擊",type:"attack",cd:3,range:"job",desc:"110%，使目標失去下一次移動",use:(a,d)=>{hit(a,d,1.1);d.tags.stun=1}},
     {id:"guardbreak",name:"碎甲",type:"attack",cd:3,range:"job",desc:"100%，先移除護盾",use:(a,d)=>{d.tags.shield=0;hit(a,d,1.0)}}]},
-  /* ===== 蕭熇（角色條目） ===== */
-  "蕭熇":{move:3,min:1,max:1,hp:125,atk:26,def:22, skills:[
+
+  /* ===== 角色（isChar: true） ===== */
+  "蕭熇":{isChar:true,move:3,min:1,max:1,hp:125,atk:26,def:22, skills:[
     {id:"crash",name:"撞陣衝軍",type:"attack",cd:3,range:"job",desc:"自損20%最大HP；0.8×並擊退2、賦遲緩II",use:(a,d)=>{ const cost=Math.max(1,Math.round(a.hpMax*0.2)); a.hp=Math.max(1,a.hp-cost); log(`${a.id} 自損 ${cost}`); hit(a,d,0.8); knockback(a,d,2); d.tags.slow2=1; render(); }},
     {id:"gale",name:"疾狼掠風",type:"skillAOE",cd:4,range:1,desc:"以自身為中心菱形3 AOE 0.5×；獲護衛；鋪炎獄2回合",use:(a)=>{ const tiles=diamondTiles(a.x,a.y,3); const foes=enemiesOf(a.side).filter(u=>tiles.some(t=>t.x===u.x&&t.y===u.y)); foes.forEach(e=>hit(a,e,0.5)); tiles.forEach(t=>addTerrain(t.x,t.y,'fire',2)); a.tags.guard=1; log(`${a.id} 展開炎獄與護衛`); a.hasActed=true; alliesLeft.delete(a.id); selected=a; endActivation(); }},
     {id:"dragon",name:"龍嘯九天",type:"skillAOE",cd:5,range:4,desc:"射程4、菱形2 AOE；施放前將防轉攻，0.6×；命中≥3獲炎鎧+護衛",use:(a)=>{ targetAOESelect(a,4,2); }},
-    {id:"defend",name:"誓死捍衛",type:"self",cd:4,desc:"1回合護衛範圍+至2格，獲復仇（反擊+30%）",use:(u)=>{u.tags.guard=1;u.tags.guardRange2=1;u.tags.revenge=1;log(`${u.id} 守護(2)+復仇`) }},
-    {id:"order",name:"蕭門將令",type:"buffTarget",cd:3,range:2,desc:"對2格內友軍：攻防UP（1回合）；若自身無御敵→+1層（展示）",use:(a,t)=>{if(t.side!==a.side){log('僅對友軍');return;} t.tags.buffAtk=1;t.tags.buffDef=1; if(!(a.tags.enemylayer>0)){ a.tags.enemylayer=(a.tags.enemylayer||0)+1; log(`${a.id} 御敵層+1（展示）`);} render(); a.hasActed=true; alliesLeft.delete(a.id); selected=a; endActivation(); }},
+    {id:"defend",name:"誓死捍衛",type:"self",cd:4,desc:"1回合護衛範圍+至2格，獲復仇（反擊+30%）",use:(u)=>{u.tags.guard=1;u.tags.guardRange2=1;u.tags.revenge=1;log(`${u.id} 守護(2)+復仇`); return true;}},
+    {id:"order",name:"蕭門將令",type:"buffTarget",cd:3,range:2,desc:"對2格內友軍：攻防UP（1回合）；若自身無御敵→+1層（展示）",use:(a,t)=>{if(t.side!==a.side){log('僅對友軍');return false;} t.tags.buffAtk=1;t.tags.buffDef=1; if(!(a.tags.enemylayer>0)){ a.tags.enemylayer=(a.tags.enemylayer||0)+1; log(`${a.id} 御敵層+1（展示）`);} render(); a.hasActed=true; alliesLeft.delete(a.id); selected=a; endActivation(); return true; }},
   ]},
-  /* ===== 驚飛羽：示範「小而無相」僅文字 ===== */
-  "驚飛羽":{move:3,min:2,max:2,hp:95,atk:28,def:12, skills:[
-    {id:"xiaoerwuxiang",name:"小而無相",type:"self",cd:2,desc:"選擇 1 個絕學釋放；使用後切換為「怨生剛復」與「山魄索魂」。〈示範用：僅顯示說明〉",use:(u)=>{log("【小而無相】（示範用：僅顯示說明）");}}
+  "驚飛羽":{isChar:true,move:3,min:2,max:2,hp:95,atk:28,def:12, skills:[
+    {id:"xiaoerwuxiang",name:"小而無相",type:"self",cd:2,desc:"選擇 1 個絕學釋放；使用後切換為「怨生剛復」與「山魄索魂」。〈示範用：僅顯示說明〉",use:(u)=>{log("【小而無相】（示範用：僅顯示說明）"); return true;}}
   ]},
+  "胧梦婳妖":{isChar:true,move:3,min:2,max:2,hp:95,atk:18,def:12,
+    skills:[
+      {id:"mirrorHeal", name:"鏡映回春", type:"heal", cd:2, range:3, val:35,
+       desc:"射程3；回復35；過量治療→自身獲「鏡朦朧」1層；3格內友軍治療+15%",
+       use:(a,t)=>{
+         let heal=35;
+         if(manhattan(a,t)<=3) heal=Math.round(heal*1.15);
+         const before=t.hp;
+         t.hp=Math.min(t.hpMax, t.hp+heal);
+         if(before+heal>t.hpMax){
+           a.tags.mist=(a.tags.mist||0)+1;
+           log(`${a.id} 獲得鏡朦朧（${a.tags.mist}）`);
+         }
+         render();
+         return true;
+       }},
+      {id:"darkAegis", name:"暗鎧結界", type:"self", cd:3,
+       desc:"消耗至多4層鏡朦朧：為3格內友軍賦予護盾=（層數×10）",
+       use:(u)=>{
+         const c=Math.min(4, u.tags.mist||0);
+         if(c===0){ log("無鏡朦朧可消耗"); return false; }
+         u.tags.mist-=c;
+         for(const v of units){
+           if(!v.dead && v.side===u.side && manhattan(u,v)<=3){
+             v.tags.shield=(v.tags.shield||0)+c*10;
+           }
+         }
+         log(`${u.id} 消耗${c}層鏡朦朧，展開暗鎧`);
+         return true;
+       }},
+      {id:"mirrorSplit", name:"鏡分虛實", type:"self", cd:6,
+       desc:"需鏡朦朧≥4：相鄰空格召喚分身（存活1回合），嘲諷+阻擋",
+       use:(u)=>{
+         if((u.tags.mist||0)<4){ log("鏡朦朧未達4層"); return false; }
+         const spot = neighbors(u.x,u.y).find(p=>inside(p.x,p.y) && !isBlocked(p.x,p.y) && !unitAt(p.x,p.y));
+         if(!spot){ log("無相鄰空位可召喚"); return false; }
+         u.tags.mist-=4;
+         const clone={
+           id:`${u.id}影`, side:u.side, job:"分身", attr:u.attr, soulId:null,
+           x:spot.x, y:spot.y, hpMax:1, hp:1, atk:0, def:999, min:1, max:1, move:0,
+           cd:{}, tags:{taunt:1, isClone:1, life:1}, bonusMove:0, dead:false,
+           hasMoved:true, hasActed:true, loadout:[],
+           turnStart:{x:spot.x,y:spot.y}, actionStart:{x:spot.x,y:spot.y}
+         };
+         units.push(clone);
+         log(`${u.id} 召喚分身於 (${spot.x},${spot.y})`);
+         render();
+         return true;
+       }},
+    ]},
 };
 
 function diamondTiles(cx,cy,r){ const out=[]; for(let dx=-r;dx<=r;dx++){const rem=r-Math.abs(dx); for(let dy=-rem;dy<=rem;dy++){const x=cx+dx,y=cy+dy; if(inside(x,y)) out.push({x,y});}} return out; }
@@ -264,7 +347,7 @@ function targetAOESelect(a,rangeR,diamondR){
 /* ====== 魂石（三枚效果） ====== */
 const SOULSTONES={
   "赤練鬼":{label:"赤練鬼（3）",desc:"主動攻擊且目標≥70%氣血：傷害+20%",hooks:{
-    computeAtk:(ctx)=>{ if(ctx.isActive && ctx.defender.hp/ctx.defender.hpMax>=0.70){ ctx.atkMul*=1.20; ctx.log.push("赤練鬼+20%"); } }
+    computeAtk:(ctx)=>{ if(ctx.isActive && ctx.defender.hp/ctx.defender.hpMax>=0.70){ ctx.atkMul*=1.20; ctx.log?.push?.("赤練鬼+20%"); } }
   }},
   "剛破鬼":{label:"剛破鬼（3）",desc:"周圍3格無友軍：攻+8%／受傷-8%",hooks:{
     computeAtk:(ctx)=>{ if(noAllyWithin(ctx.attacker,3)) ctx.atkMul*=1.08; }, computeDef:(ctx)=>{ if(noAllyWithin(ctx.defender,3)) ctx.defMul*=0.92; }
@@ -276,13 +359,13 @@ const SOULSTONES={
     computeDef:(ctx)=>{const s=ctx.defender.tags.mang||0; if(s) ctx.defMul*=(1-0.03*s);}
   }},
   "鬼面花蛛":{label:"鬼面花蛛（3）",desc:"主攻前50%：賦『遲緩II、蝕魔（法防-30%）』",hooks:{
-    beforeAttack:(ctx)=>{ if(!ctx.isActive) return; if(Math.random()<0.5){ ctx.defender.tags.slow2=1; ctx.defender.tags.mdefDown30=1; ctx.log.push("蛛：遲緩II/蝕魔"); } }
+    beforeAttack:(ctx)=>{ if(!ctx.isActive) return; if(Math.random()<0.5){ ctx.defender.tags.slow2=1; ctx.defender.tags.mdefDown30=1; ctx.log?.push?.("蛛：遲緩II/蝕魔"); } }
   }},
   "九環朱蝮":{label:"九環朱蝮（3）",desc:"主動造成傷害後：給『中毒(10%)』1回合",hooks:{
-    afterAttack:(ctx)=>{ if(ctx.isActive && ctx.didDamage){ ctx.defender.tags.poison10=1; ctx.log.push("朱蝮：中毒"); } }
+    afterAttack:(ctx)=>{ if(ctx.isActive && ctx.didDamage){ ctx.defender.tags.poison10=1; ctx.log?.push?.("朱蝮：中毒"); } }
   }},
   "妖術師":{label:"妖術師（3）",desc:"使用傷害絕學後50%使該技CD-2",hooks:{
-    onSkillUse:(ctx)=>{ if(ctx.skill?.isDamage && Math.random()<0.5){ ctx.owner.cd[ctx.skill.id]=Math.max(0,(ctx.owner.cd[ctx.skill.id]||0)-2); ctx.log.push("妖術師：CD-2"); } }
+    onSkillUse:(ctx)=>{ try{ if(ctx && ctx.skill?.isDamage && Math.random()<0.5 && ctx.owner && ctx.owner.cd){ const sid = ctx.skill.id; ctx.owner.cd[sid] = Math.max(0, (ctx.owner.cd[sid]||0) - 2); ctx.log?.push?.("妖術師：CD-2"); } }catch(e){ console.warn("妖術師 hook error:", e);} }
   }},
   "荒螫":{label:"荒螫（3）",desc:"普通攻擊傷害+20%",hooks:{ computeAtk:(ctx)=>{ if(!ctx.isSkill) ctx.atkMul*=1.20; } }},
   "羽魅":{label:"羽魅（3）",desc:"2格內無友軍：傷+12%／受傷-12%",hooks:{
@@ -300,22 +383,23 @@ const SOULSTONES={
 const SOUL_IDS=Object.keys(SOULSTONES);
 function noAllyWithin(u,r){ for(const v of units){ if(v.dead||v.side!==u.side||v===u) continue; if(manhattan(u,v)<=r) return false; } return true; }
 
-/* ===================== 佈陣預設 ===================== */
+/* ===================== 佈陣預設（分離來源） ===================== */
 let setupData={
-  A1:{job:"蕭熇", attr:"火", soul:"羅鬼", skills:["crash","gale","defend"]},
-  A2:{job:"俠客", attr:"光", soul:"頭狼", skills:["combo","light","bleed"]},
-  A3:{job:"祝由", attr:"神", soul:"咒石兵", skills:["heal","haste","cleanse"]},
-  E1:{job:"鐵衛", attr:"暗", soul:"剛破鬼", skills:["guard","taunt","block"]},
-  E2:{job:"羽士", attr:"冰", soul:"鬼面花蛛", skills:["pierce","aim","repel"]},
-  E3:{job:"咒師", attr:"幽", soul:"赤練鬼", skills:["bolt","slow","veil"]},
+  A1:{kind:"角色", item:"蕭熇", attr:"火", soul:"羅鬼", skills:["crash","gale","defend"]},
+  A2:{kind:"職業", item:"俠客", attr:"光", soul:"頭狼", skills:["combo","light","bleed"]},
+  A3:{kind:"角色", item:"胧梦婳妖", attr:"暗", soul:"咒石兵", skills:["mirrorHeal","darkAegis","mirrorSplit"]},
+  E1:{kind:"職業", item:"鐵衛", attr:"暗", soul:"剛破鬼", skills:["guard","taunt","block"]},
+  E2:{kind:"職業", item:"羽士", attr:"冰", soul:"鬼面花蛛", skills:["pierce","aim","repel"]},
+  E3:{kind:"職業", item:"咒師", attr:"幽", soul:"赤練鬼", skills:["bolt","slow","veil"]},
 };
 
 function mkUnit(slot){
-  const conf=setupData[slot.id], jd=JOBS[conf.job];
-  const u={ id:slot.id, side:slot.side, job:conf.job, attr:conf.attr, soulId:conf.soul,
+  const conf=setupData[slot.id];
+  const jd=JOBS[conf.item]; // item 已分職業/角色
+  const u={ id:slot.id, side:slot.side, job:conf.item, attr:conf.attr, soulId:conf.soul,
     x:slot.x, y:slot.y, hpMax:jd.hp, hp:jd.hp, atk:jd.atk, def:jd.def, min:jd.min, max:jd.max, move:jd.move,
     cd:{}, tags:{}, bonusMove:0, dead:false, hasMoved:false, hasActed:false,
-    loadout: conf.skills.slice(0,3),
+    loadout: (conf.skills||[]).slice(0,3),
     turnStart:{x:slot.x,y:slot.y}, actionStart:{x:slot.x,y:slot.y}
   };
   u.soul=SOULSTONES[u.soulId]||null; if(u.soul?.hooks?.init) u.soul.hooks.init(u);
@@ -369,8 +453,17 @@ function turnEnd(){
       if(u.hp===0){u.dead=true; log(`${u.id} 陣亡！`);}
     }
   }
+  // 分身壽命結束
+  for(const u of units){
+    if(u.tags?.isClone){
+      u.tags.life = (u.tags.life||0) - 1;
+      if(u.tags.life<=0 && !u.dead){
+        u.dead = true; log(`${u.id} 分身消散`);
+      }
+    }
+  }
   // 全員 CD-1
-  for(const u of units) for(const k in u.cd) u.cd[k]=Math.max(0,u.cd[k]-1);
+  for(const u of units){ for(const k in u.cd) u.cd[k]=Math.max(0,u.cd[k]-1); }
 
   if(checkGameOver()) return;
   round+=1; roundEl.textContent=round;
@@ -399,6 +492,7 @@ function render(){
   }
   drawActionBar();
   renderActionBar();
+  renderInfo();
   trimLog();
 }
 function paint(x,y,cls){const d=document.createElement("div");d.className=`tile ${cls}`;d.style.left=`${x*CELL}px`;d.style.top=`${y*CELL}px`;board.appendChild(d);}
@@ -426,6 +520,11 @@ function reach(u,R){
 /* ===================== 互動（任選尚未行動的我方） ===================== */
 function onUnitClick(u){
   if(u.dead || EDIT_MODE) return;
+
+  // 若切換到另一名「我方」→ 先還原前一位未結束行動者
+  if(selected && selected.side==="ally" && u.side==="ally" && selected.id!==u.id){
+    rollbackToActionStart(selected);
+  }
 
   // 點敵人當作攻擊目標（需已選中一名我方）
   if(selected && phase==="act" && u.side!=="ally"){ tryAttack(selected,u); return; }
@@ -482,14 +581,14 @@ function drawActionBar(){
   actions.innerHTML="";
   if(!selected || selected.side!=="ally") return;
 
-  const atkBtn=btn(`普通攻擊${RULE_MOVE_OR_ACT&&selected.hasMoved?'（禁用：已移動）':''}`, ()=>{
+  const atkBtn=btn(`⚔️ 普通攻擊${RULE_MOVE_OR_ACT&&selected.hasMoved?'（禁用：已移動）':''}`, ()=>{
     if(RULE_MOVE_OR_ACT && selected.hasMoved){ log("嚴格規則：已移動，本次行動不可再行動。"); return; }
     phase="act"; skillLock=null; render();
   });
   if(RULE_MOVE_OR_ACT && selected.hasMoved) atkBtn.disabled=true; actions.appendChild(atkBtn);
 
   const jd=JOBS[selected.job]; selected.loadout.forEach(skId=>{
-    const sk=jd.skills.find(s=>s.id===skId); if(!sk) return; const left=(selected.cd[sk.id]||0);
+    const sk=jd.skills.find(s=>s.id===skId); if(!sk) return; const left=(selected.cd && selected.cd[sk.id]) || 0;
     const b=btn(`${sk.name}`, ()=>{
       if(left) return;
       if(RULE_MOVE_OR_ACT && selected.hasMoved && !["self","dash","buff","skillAOE","buffTarget"].includes(sk.type)){ log("嚴格規則：已移動，本次行動不可再行動。"); return; }
@@ -506,13 +605,12 @@ function drawActionBar(){
     actions.appendChild(b);
   });
 
-  actions.appendChild(btn("撤銷到本次行動開始", ()=>{
-    if(selected){ const back=selected.actionStart; if(back){ selected.x=back.x; selected.y=back.y; }
-      selected.hasMoved=false; selected.bonusMove=0; selected.tags.moved2=0; log(`${selected.id} 撤銷到 (${selected.x},${selected.y})`);}
+  actions.appendChild(btn("↩️ 撤銷到本次行動開始", ()=>{
+    if(selected){ rollbackToActionStart(selected); }
     render();
   }));
 
-  actions.appendChild(btn("結束本次行動", ()=>{ if(selected) endActivation(); }));
+  actions.appendChild(btn("⏭️ 結束本次行動", ()=>{ if(selected) endActivation(); }));
 }
 function btn(txt,fn){const b=document.createElement("button");b.className="btn";b.textContent=txt;b.onclick=fn;return b;}
 
@@ -550,7 +648,7 @@ function computeDamage(attacker,defender,ratio=1,isSkill=false,skillObj=null){
   return {dmg, logBuff, pierce, mul};
 }
 function baseHit(a,d,ratio=1,isSkill=false,skillObj=null){
-  a.soul?.hooks?.beforeAttack?.({attacker:a,defender:d,isActive:true,isSkill,skill:skillObj});
+  a.soul?.hooks?.beforeAttack?.({attacker:a,defender:d,isActive:true,isSkill,skill:skillObj, log:[]});
   const {dmg,logBuff,pierce,mul}=computeDamage(a,d,ratio,isSkill,skillObj);
   const hpB=d.hp; d.hp=Math.max(0,d.hp-dmg); const didDamage=d.hp<hpB;
 
@@ -558,20 +656,77 @@ function baseHit(a,d,ratio=1,isSkill=false,skillObj=null){
   if(logBuff.length) log("魂石："+logBuff.join("，"));
   if(d.hp===0){ d.dead=true; log(`${d.id} 陣亡！`); }
 
-  a.soul?.hooks?.afterAttack?.({attacker:a,defender:d,didDamage,isActive:true,isSkill,skill:skillObj});
-  d.soul?.hooks?.onBeHit?.({attacker:a,defender:d,didDamage,isActive:true,isSkill,skill:skillObj});
+  a.soul?.hooks?.afterAttack?.({attacker:a,defender:d,didDamage,isActive:true,isSkill,skill:skillObj, log:[]});
+  d.soul?.hooks?.onBeHit?.({attacker:a,defender:d,didDamage,isActive:true,isSkill,skill:skillObj, log:[]});
   render();
 }
 function hit(a,d,ratio=1){ baseHit(a,d,ratio,false,null); }
 function attack(a,d){ baseHit(a,d,1.0,false,null); selected.hasActed=true; alliesLeft.delete(selected.id); endActivation(); }
 
-function useSkill(a,target,sk){
-  a.soul?.hooks?.onSkillUse?.({user:a, skill:{id:sk.id,isDamage:sk.type==="attack"||sk.type==="skillAOE"}, owner:a});
-  if(sk.type==="self"||sk.type==="dash"||sk.type==="buff"){ sk.use(a); a.cd[sk.id]=sk.cd; selected.hasActed=true; alliesLeft.delete(selected.id); endActivation(); return; }
-  if(sk.type==="buffTarget"){ sk.use(a,target); a.cd[sk.id]=sk.cd; return; }
-  if(sk.type==="attack"){ baseHit(a,target,1.0,true,sk); a.cd[sk.id]=sk.cd; selected.hasActed=true; alliesLeft.delete(selected.id); endActivation(); return; }
-  if(sk.type==="heal"){ sk.use(a,target); a.cd[sk.id]=sk.cd; selected.hasActed=true; alliesLeft.delete(selected.id); endActivation(); return; }
-  if(sk.type==="skillAOE"){ /* gale/dragon在自身use內處理 → 已呼叫 endActivation */ a.cd[sk.id]=sk.cd; return; }
+function useSkill(a, target, sk){
+  // 先通知魂石：使用技能
+  a.soul?.hooks?.onSkillUse?.({
+    user:a,
+    skill:{id:sk.id, isDamage: sk.type==="attack" || sk.type==="skillAOE"},
+    owner:a,
+    log:[]
+  });
+
+  let success = true;
+
+  if (sk.type==="self" || sk.type==="dash" || sk.type==="buff"){
+    const ret = sk.use(a);
+    success = (ret!==false);
+    if (success){
+      a.cd[sk.id]=sk.cd;
+      selected.hasActed=true; alliesLeft.delete(selected.id);
+      endActivation();
+    } else {
+      log(`「${sk.name}」條件不足，未消耗行動。`);
+    }
+    return;
+  }
+
+  if (sk.type==="buffTarget"){
+    const ret = sk.use(a, target);
+    success = (ret!==false);
+    if (success){
+      a.cd[sk.id]=sk.cd;
+      if (!a.hasActed){ // 有些技能內已結束
+        selected.hasActed=true; alliesLeft.delete(selected.id);
+        endActivation();
+      }
+    } else {
+      log(`「${sk.name}」條件不足，未消耗行動。`);
+    }
+    return;
+  }
+
+  if (sk.type==="attack"){
+    baseHit(a, target, 1.0, true, sk);
+    a.cd[sk.id]=sk.cd;
+    selected.hasActed=true; alliesLeft.delete(selected.id);
+    endActivation();
+    return;
+  }
+
+  if (sk.type==="heal"){
+    const ret = sk.use(a, target);
+    success = (ret!==false);
+    if (success){
+      a.cd[sk.id]=sk.cd;
+      selected.hasActed=true; alliesLeft.delete(selected.id);
+      endActivation();
+    } else {
+      log(`「${sk.name}」條件不足，未消耗行動。`);
+    }
+    return;
+  }
+
+  if (sk.type==="skillAOE"){
+    a.cd[sk.id]=sk.cd; // gale/dragon 內處理行動結束
+    return;
+  }
 }
 
 /* 擊退 */
@@ -586,10 +741,18 @@ function knockback(att,a,dist){
 /* ===================== 行動結束 → 交替敵方 ===================== */
 function endActivation(){
   const u = selected;
+
+  // 玩家主動結束 → 視為跳過也消耗行動
+  if (u && u.side==="ally" && !u.hasActed){
+    u.hasActed = true;
+    alliesLeft.delete(u.id);
+  }
+
   if(u){
     u.actionStart={x:u.x,y:u.y}; // 清撤銷點
     for(const k in u.cd){ u.cd[k]=Math.max(0,u.cd[k]-1); } // 自己技能 -1
   }
+
   selected=null; phase="idle"; render();
   if(checkGameOver()) return;
 
@@ -602,7 +765,9 @@ function endActivation(){
 function aiActFor(actor){
   if(actor.dead || !enemiesLeft.has(actor.id)){ enemyDone(); return; }
 
-  const foes=alliesOf("ally");
+  const allFoesRaw = alliesOf("ally");
+  const foes = allFoesRaw.some(f=>f.tags?.taunt) ? allFoesRaw.filter(f=>f.tags?.taunt) : allFoesRaw;
+
   const tgtStay=foes.filter(e=>inRange(actor,e) && checkLoS(actor,e))
                     .sort((a,b)=>elemMul(actor.attr,b.attr)-elemMul(actor.attr,a.attr))[0];
   if(tgtStay){
@@ -624,8 +789,16 @@ function enemyDone(){
 }
 function inRange(a,b){const d=manhattan(a,b); if(a.job==="羽士") return d===2; return (d>=a.min && d<=a.max);}
 function nearest(from,list){let best=null,bd=1e9; for(const t of list){const d=manhattan(from,t); if(d<bd){bd=d;best=t;}} return best;}
-function bestStep(u,target,R){const tiles=reach(u,R); tiles.push({x:u.x,y:u.y}); const goal=u.min===1?1:2;
-  tiles.sort((a,b)=>{const da=Math.abs(a.x-target.x)+Math.abs(a.y-target.y);const db=Math.abs(b.x-target.x)+Math.abs(b.y-target.y);return Math.abs(da-goal)-Math.abs(db-goal)}); return tiles[0]||null;}
+function bestStep(u,target,R){
+  const tiles=reach(u,R); tiles.push({x:u.x,y:u.y});
+  const goal=u.min===1?1:2;
+  tiles.sort((a,b)=>{
+    const da=Math.abs(a.x-target.x)+Math.abs(a.y-target.y);
+    const db=Math.abs(b.x-target.x)+Math.abs(b.y-target.y);
+    return Math.abs(da-goal)-Math.abs(db-goal);
+  });
+  return tiles[0]||null;
+}
 
 /* ===================== 行動條 & 戰報 ===================== */
 function renderActionBar(){
@@ -653,6 +826,52 @@ document.getElementById('toggleLog').onclick=()=>{
 };
 function trimLog(){ const maxLines=200; while(logEl.children.length>maxLines){ logEl.removeChild(logEl.firstChild); } }
 
+/* ===================== 右側資訊 ===================== */
+function renderInfo(){
+  const box = document.getElementById('info');
+  if(!box){ return; }
+
+  if(!selected){
+    box.innerHTML = `
+      <div class="info-card">
+        <div class="info-head"><span class="name">未選取單位</span><span class="stat">—</span></div>
+        <div class="info-body small" style="opacity:.7">點選棋盤上的友軍查看技能與魂石資訊。</div>
+      </div>`;
+    return;
+  }
+
+  const u = selected;
+  const jobDef = JOBS[u.job];
+  if(!jobDef){ box.innerHTML=''; return; }
+
+  const skillsHtml = u.loadout.map(id=>{
+    const sk = jobDef.skills.find(s=>s.id===id);
+    if(!sk) return '';
+    const left = (u.cd && u.cd[sk.id]) || 0;
+    const cdTag = left ? `冷卻 ${left}/${sk.cd}` : `冷卻 ${sk.cd}`;
+    return `<div class="skill">
+      <b>🧩 ${sk.name}</b><div class="meta">${cdTag}</div>
+      <hr class="sep"><div class="small">${sk.desc}</div>
+    </div>`;
+  }).join('');
+
+  const soul = SOULSTONES[u.soulId];
+  const soulHtml = `<div class="soul"><b>💠 魂石能力</b><hr class="sep"><div>${soul ? `${soul.label} — ${soul.desc}` : '無'}</div></div>`;
+
+  box.innerHTML = `
+    <div class="info-card">
+      <div class="info-head">
+        <span class="name">${u.id}　${u.job} <span class="tag" style="margin-left:6px;border-color:${colorAttr(u.attr)};color:${colorAttr(u.attr)}">${u.attr}</span></span>
+        <span class="stat">❤ ${u.hp}/${u.hpMax}</span>
+      </div>
+      <div class="info-body">
+        ${skillsHtml || '<div class="small">（無技能）</div>'}
+        ${soulHtml}
+      </div>
+    </div>
+  `;
+}
+
 /* ===================== 勝負 / 日誌 ===================== */
 function checkGameOver(){
   const A=alliesOf("ally").length>0, B=alliesOf("enemy").length>0;
@@ -661,7 +880,7 @@ function checkGameOver(){
 }
 function log(msg){const t=new Date().toLocaleTimeString('zh-TW',{hour12:false}); const d=document.createElement("div"); d.textContent=`[${t}] ${msg}`; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight;}
 
-/* ===================== 設定面板 ===================== */
+/* ===================== 設定面板（來源分離） ===================== */
 const setup=document.getElementById("setup"), setupRowsEl=document.getElementById("setupRows");
 document.getElementById("openSetup").onclick=()=>openSetup();
 document.getElementById("closeSetup").onclick=()=>setup.style.display="none";
@@ -672,25 +891,52 @@ document.getElementById("randomBlocks").onclick=()=>{ for(let y=0;y<GRID_H;y++) 
 
 function openSetup(){
   setupRowsEl.innerHTML=""; document.getElementById('mapW').value=GRID_W; document.getElementById('mapH').value=GRID_H;
+
+  const jobList = Object.keys(JOBS).filter(k=>!JOBS[k].isChar);
+  const charList = Object.keys(JOBS).filter(k=>JOBS[k].isChar);
+
   for(const s of slots){
     const tr=document.createElement("tr");
-    const selJob=mkSelect(Object.keys(JOBS), setupData[s.id].job);
-    const selAttr=mkSelect(ATTR, setupData[s.id].attr);
-    const selSoul=mkSelect(SOUL_IDS, setupData[s.id].soul, k=>SOULSTONES[k].label);
 
-    const skillsBox=document.createElement('div'); skillsBox.className="skills"; const jobSkills=()=>JOBS[selJob.value].skills;
-    function makeSkillSelect(defId){ const sel=document.createElement('select'); jobSkills().forEach(sk=>{const o=document.createElement('option');o.value=sk.id;o.textContent=`${sk.name}（CD${sk.cd}）`;o.title=sk.desc;sel.appendChild(o)}); sel.value=defId||jobSkills()[0].id; return sel; }
-    const s1=makeSkillSelect((setupData[s.id].skills||[])[0]); const s2=makeSkillSelect((setupData[s.id].skills||[])[1]); const s3=makeSkillSelect((setupData[s.id].skills||[])[2]);
-    skillsBox.append(s1,s2,s3);
-    selJob.onchange=()=>{ const js=jobSkills(); [s1,s2,s3].forEach((sel,i)=>{ sel.innerHTML=""; js.forEach(sk=>{const o=document.createElement('option');o.value=sk.id;o.textContent=`${sk.name}（CD${sk.cd}）`;o.title=sk.desc;sel.appendChild(o)}); sel.value=js[Math.min(i,js.length-1)].id; }); };
+    // 來源（職業 / 角色）
+    const selKind=mkSelect(["職業","角色"], setupData[s.id].kind);
+    const selItem=document.createElement("select");
+    function refillItem(){
+      selItem.innerHTML="";
+      const list = selKind.value==="職業" ? jobList : charList;
+      list.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;selItem.appendChild(o)});
+      const want = setupData[s.id].item;
+      selItem.value = list.includes(want) ? want : list[0];
+    }
+    refillItem();
+    selKind.onchange=()=>{ refillItem(); refreshSkillBox(); };
+
+    // 屬性、魂石
+    const selAttr=mkSelect(ATTR, setupData[s.id].attr);
+    const selSoul=mkSelect(Object.keys(SOULSTONES), setupData[s.id].soul, k=>SOULSTONES[k].label);
+
+    // 技能（跟著 item 變化）
+    const skillsBox=document.createElement('div'); skillsBox.className="skills";
+    function refreshSkillBox(){
+      skillsBox.innerHTML="";
+      const js=JOBS[selItem.value].skills;
+      function makeSkillSelect(defId){ const sel=document.createElement('select'); js.forEach(sk=>{const o=document.createElement('option');o.value=sk.id;o.textContent=`${sk.name}（CD${sk.cd}）`;o.title=sk.desc;sel.appendChild(o)}); sel.value=defId||js[0].id; return sel; }
+      const saved = setupData[s.id].skills||[];
+      const s1=makeSkillSelect(saved[0]), s2=makeSkillSelect(saved[1]||js[Math.min(1,js.length-1)].id), s3=makeSkillSelect(saved[2]||js[Math.min(2,js.length-1)].id);
+      skillsBox.append(s1,s2,s3);
+      tr.skillSels=[s1,s2,s3];
+    }
+    refreshSkillBox();
+    selItem.onchange=refreshSkillBox;
 
     tr.innerHTML=`<td>${s.id}</td><td>${s.side==="ally"?"玩家":"電腦"}</td>`;
-    const tdJob=document.createElement("td"); tdJob.appendChild(selJob);
+    const tdKind=document.createElement("td"); tdKind.appendChild(selKind);
+    const tdItem=document.createElement("td"); tdItem.appendChild(selItem);
     const tdAttr=document.createElement("td"); tdAttr.appendChild(selAttr);
     const tdSoul=document.createElement("td"); tdSoul.appendChild(selSoul);
     const tdSkills=document.createElement("td"); tdSkills.appendChild(skillsBox);
-    tr.append(tdJob,tdAttr,tdSoul,tdSkills); setupRowsEl.appendChild(tr);
-    tr.dataset.slot=s.id; tr.jobSel=selJob; tr.attrSel=selAttr; tr.soulSel=selSoul; tr.skillSels=[s1,s2,s3];
+    tr.append(tdKind,tdItem,tdAttr,tdSoul,tdSkills); setupRowsEl.appendChild(tr);
+    tr.dataset.slot=s.id; tr.kindSel=selKind; tr.itemSel=selItem; tr.attrSel=selAttr; tr.soulSel=selSoul;
   }
   setup.style.display="flex";
 }
@@ -701,12 +947,34 @@ function applySetup(){
   document.documentElement.style.setProperty('--w', GRID_W); document.documentElement.style.setProperty('--h', GRID_H);
   sizeTag.textContent=`${GRID_W}×${GRID_H}`;
   const rows=[...document.querySelectorAll("#setupRows tr")];
-  rows.forEach(r=>{ setupData[r.dataset.slot]={ job:r.jobSel.value, attr:r.attrSel.value, soul:r.soulSel.value, skills:r.skillSels.map(s=>s.value) }; });
+  rows.forEach(r=>{
+    setupData[r.dataset.slot]={
+      kind:r.kindSel.value,
+      item:r.itemSel.value,
+      attr:r.attrSel.value,
+      soul:r.soulSel.value,
+      skills:r.skillSels.map(s=>s.value)
+    };
+  });
   slots[3].x=GRID_W-1; slots[3].y=GRID_H-2; slots[4].x=GRID_W-2; slots[4].y=GRID_H-1; slots[5].x=GRID_W-3; slots[5].y=GRID_H-3;
 }
 function randomizeSetup(){
+  const jobList = Object.keys(JOBS).filter(k=>!JOBS[k].isChar);
+  const charList = Object.keys(JOBS).filter(k=>JOBS[k].isChar);
   const rows=[...document.querySelectorAll("#setupRows tr")];
-  rows.forEach(r=>{ const J=Object.keys(JOBS), A=ATTR, S=SOUL_IDS; r.jobSel.value=J[Math.floor(Math.random()*J.length)]; r.attrSel.value=A[Math.floor(Math.random()*A.length)]; r.soulSel.value=S[Math.floor(Math.random()*S.length)]; r.jobSel.onchange(); });
+  rows.forEach(r=>{
+    const useChar = Math.random()<0.5;
+    r.kindSel.value = useChar ? "角色" : "職業";
+    r.itemSel.innerHTML="";
+    (useChar ? charList : jobList).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;r.itemSel.appendChild(o)});
+    r.itemSel.value = (useChar?charList:jobList)[Math.floor(Math.random()* (useChar?charList.length:jobList.length))];
+    // 觸發技能刷新
+    r.itemSel.dispatchEvent(new Event('change'));
+    // 隨機屬性與魂石
+    const A=ATTR, S=Object.keys(SOULSTONES);
+    r.attrSel.value=A[Math.floor(Math.random()*A.length)];
+    r.soulSel.value=S[Math.floor(Math.random()*S.length)];
+  });
 }
 
 /* ===================== 控制 / 啟動 ===================== */
@@ -725,16 +993,20 @@ function runSmokeTests(){
   // 屬性克制
   console.assert(elemMul('神','冰')===1.25,"神克冰");
   console.assert(elemMul('神','光')===0.8,"神被光");
-  // setActionStart 存在且能正確清理狀態
-  const tempU={x:1,y:1,actionStart:{},hasMoved:true,bonusMove:2,tags:{moved2:1}};
-  setActionStart(tempU);
-  console.assert(tempU.actionStart.x===1 && tempU.actionStart.y===1,"actionStart snapshot");
-  console.assert(tempU.hasMoved===false,"hasMoved cleared");
-  console.assert(tempU.bonusMove===0,"bonusMove cleared");
-  console.assert(tempU.tags.moved2===0,"moved2 cleared");
+  // setActionStart / rollback
+  const tempU={id:'X',x:1,y:1,actionStart:{x:0,y:0},hasMoved:true,bonusMove:2,tags:{moved2:1},hasActed:false};
+  rollbackToActionStart(tempU);
+  console.assert(tempU.x===0 && tempU.y===0,"rollbackToActionStart works");
+  // 切換單位時會還原
+  selected = {id:'A',side:'ally',actionStart:{x:2,y:2},x:5,y:5,hasMoved:true,bonusMove:1,tags:{moved2:1},hasActed:false};
+  onUnitClick({id:'B',side:'ally'}); // 會觸發還原
+  // 技能失敗不消耗行動
+  const u = {id:'U',side:'ally',cd:{},hasActed:false,tags:{},soul:{hooks:{} } };
+  selected=u; alliesLeft.add('U');
+  const fakeSkill = { id:'_fail_', name:'假失敗', type:'self', cd:3, use:()=>false };
+  useSkill(u, u, fakeSkill);
+  console.assert(u.hasActed===false, "技能失敗不應消耗行動/打勾");
 }
-
-/* go */
 newGame(); runSmokeTests();
 </script>
 </body>
