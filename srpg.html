@@ -1,139 +1,741 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>天地劫 SRPG 網頁版</title>
-  <style>
-    body {
-      background-color: #111;
-      color: #fff;
-      font-family: "Microsoft JhengHei", sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    h1 {
-      margin-top: 20px;
-      color: #ffc107;
-    }
-    #game-board {
-      display: grid;
-      grid-template-columns: repeat(8, 60px);
-      grid-template-rows: repeat(8, 60px);
-      gap: 2px;
-      margin: 30px auto;
-      width: fit-content;
-    }
-    .tile {
-      width: 60px;
-      height: 60px;
-      background-color: #333;
-      border: 1px solid #555;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.2em;
-      cursor: pointer;
-    }
-    .hero {
-      background-color: #4caf50;
-    }
-    .enemy {
-      background-color: #f44336;
-    }
-    .highlight {
-      background-color: #2196f3 !important;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>天地劫·戰棋（最終整合版）</title>
+<style>
+:root{--cell:60px;--w:12;--h:10}
+body{margin:0;background:#0e1217;color:#e6edf3;font-family:system-ui,"Noto Sans TC","Microsoft JhengHei",sans-serif}
+header{padding:10px 14px;border-bottom:1px solid #263040;background:#10161f;display:flex;gap:10px;align-items:center;justify-content:space-between}
+h1{margin:0;font-size:16px}
+main{display:grid;grid-template-columns:auto 380px;gap:10px;padding:10px}
+#board{width:calc(var(--cell)*var(--w));height:calc(var(--cell)*var(--h));position:relative;border:1px solid #263040;border-radius:10px;background:
+linear-gradient(#263040 1px,transparent 1px) 0 0/var(--cell) var(--cell),
+linear-gradient(90deg,#263040 1px,transparent 1px) 0 0/var(--cell) var(--cell),#0b0f14}
+.unit{position:absolute;width:var(--cell);height:var(--cell);display:grid;place-items:center;border-radius:10px;font-weight:700;cursor:pointer;user-select:none}
+.ally{background:#173a66;border:1px solid #6fb1ff}
+.enemy{background:#5a1f1f;border:1px solid #ff8b8b}
+.dead{opacity:.35;filter:grayscale(1);pointer-events:none}
+.badge{position:absolute;top:2px;right:4px;font-size:12px;padding:2px 6px;border-radius:999px;background:#0b0f14;border:1px solid #3a475c}
+.hpbar{position:absolute;bottom:2px;left:4px;right:4px;height:6px;background:#1b2431;border-radius:4px;overflow:hidden}
+.hp{height:100%;background:#71e38e}
+.sel{box-shadow:0 0 0 3px #86e1ff66 inset}
+.tile{position:absolute;width:var(--cell);height:var(--cell);pointer-events:none}
+.move{outline:2px solid rgba(80,180,255,.85);background:rgba(80,180,255,.12)}
+.atk{outline:2px solid rgba(255,120,120,.95);background:rgba(255,80,80,.12)}
+.blk{position:absolute;left:0;top:0;width:100%;height:100%;background:#2a3344;box-shadow:inset 0 0 0 2px #3e4a62;border-radius:8px}
+.terrain-fire{position:absolute;left:0;top:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(255,120,0,.18),rgba(255,0,0,.18));box-shadow:inset 0 0 0 2px rgba(255,120,0,.5);border-radius:8px}
+aside{border:1px solid #263040;background:#0b0f14;border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+.panel{padding:10px 10px 0;display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid #334156;border-radius:999px;padding:4px 8px;font-size:12px}
+#actions{display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px;border-top:1px solid #263040}
+.btn{background:#1a2330;border:1px solid #3a475c;color:#e6edf3;padding:7px 10px;border-radius:8px;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+#log{flex:1;padding:10px;overflow:auto;border-top:1px solid #263040;font-family:ui-monospace,Menlo,Consolas,monospace;max-height:220px}
+#turn{padding:8px 10px;border-top:1px solid #263040;display:flex;justify-content:space-between;align-items:center}
+label.switch{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+input[type=checkbox]{transform:scale(1.2)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center}
+.card{background:#0f1520;border:1px solid #334156;border-radius:12px;min-width:980px;max-width:95vw}
+.card h2{margin:0;padding:12px 14px;border-bottom:1px solid #334156;font-size:16px}
+.card .body{padding:12px 14px}
+table{width:100%;border-collapse:collapse}
+th,td{border-bottom:1px solid #233044;padding:6px;font-size:13px;text-align:left;vertical-align:top}
+select{background:#0b0f14;color:#e6edf3;border:1px solid #3a475c;border-radius:6px;padding:4px}
+input[type=number]{width:70px;background:#0b0f14;color:#e6edf3;border:1px solid #3a475c;border-radius:6px;padding:4px}
+.skills{display:flex;gap:4px;flex-wrap:wrap}
+.small{font-size:12px;opacity:.8}
+/* 行動條 */
+#actionBar{border-top:1px solid #263040;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.dot{padding:2px 8px;border:1px solid #334156;border-radius:999px;font-size:12px}
+.dot.done{background:#213045;border-color:#3e6e9f}
+.dot.foe{background:#3b2222;border-color:#9f3e3e}
+</style>
 </head>
 <body>
-  <h1>天地劫 SRPG 網頁版 - 互動版</h1>
-  <div id="game-board"></div>
-  <button onclick="resetBoard()">重置棋盤</button>
+<header>
+  <div style="display:flex;gap:10px;align-items:center">
+    <h1>天地劫·戰棋（最終整合版）</h1>
+    <button id="openSetup" class="btn">編隊 / 地圖設定</button>
+    <button id="toggleEdit" class="btn">地形編輯：關</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <label class="switch" title="開：同一次行動只能移動或行動其一">
+      <input id="ruleStrict" type="checkbox" checked> 嚴格：移動或行動（二擇一）
+    </label>
+    <button id="reset" class="btn">重開一局</button>
+  </div>
+</header>
+<main>
+  <div id="board" aria-label="grid board"></div>
+  <aside>
+    <div class="panel">
+      <div class="chip">棋盤：<span id="sizeTag">12×10</span></div>
+      <div class="chip">你任選一隻 ↔ 敵方出手一隻</div>
+      <div class="chip">剋制 ×1.25 ／ 被剋 ×0.80</div>
+    </div>
+    <div class="panel">
+      <div class="chip">光→暗→幽→光</div>
+      <div class="chip">雷→冰→火→雷</div>
+      <div class="chip">神▶冰雷火；神◀光暗幽</div>
+      <div class="chip">魔▶光暗幽；魔◀冰雷火</div>
+    </div>
+    <div id="actions"></div>
 
-  <script>
-    const board = document.getElementById("game-board");
-    let heroPos = { row: 0, col: 0 };
-    let selected = false;
+    <div id="actionBar">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b>行動條</b>
+        <button id="toggleLog" class="btn">收合紀錄</button>
+      </div>
+      <div class="small">我方</div>
+      <div id="barAllies" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      <div class="small" style="margin-top:4px">敵方</div>
+      <div id="barEnemies" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
 
-    function createTile(row, col) {
-      const div = document.createElement("div");
-      div.classList.add("tile");
-      div.dataset.row = row;
-      div.dataset.col = col;
+    <div id="log"></div>
 
-      if (row === heroPos.row && col === heroPos.col) {
-        div.classList.add("hero");
-        div.innerText = "我";
-      } else if ((row === 2 && col === 2) || (row === 4 && col === 5)) {
-        div.classList.add("enemy");
-        div.innerText = "敵";
-      }
+    <div id="turn">
+      <div>回合：<b id="roundNum">1</b>｜現在：<b id="turnWho">玩家</b></div>
+      <div><button id="endAct" class="btn">結束本次行動</button></div>
+    </div>
+  </aside>
+</main>
 
-      div.addEventListener("click", () => handleClick(row, col));
-      board.appendChild(div);
+<!-- 編隊 / 地圖設定 -->
+<div class="modal" id="setup">
+  <div class="card">
+    <h2>編隊 / 地圖設定（套用後重開）</h2>
+    <div class="body">
+      <div style="display:flex;gap:16px;align-items:center;margin-bottom:10px">
+        <div>棋盤寬：<input id="mapW" type="number" min="6" max="20" value="12"></div>
+        <div>棋盤高：<input id="mapH" type="number" min="6" max="20" value="10"></div>
+        <button id="clearBlocks" class="btn">清空障礙</button>
+        <button id="randomBlocks" class="btn">隨機障礙</button>
+      </div>
+      <table>
+        <thead><tr><th>槽位</th><th>陣營</th><th>職業/角色</th><th>屬性</th><th>魂石（套裝三枚）</th><th>攜帶技能（最多3）</th></tr></thead>
+        <tbody id="setupRows"></tbody>
+      </table>
+      <div class="small" style="margin-top:6px">
+        魂石使用「三枚」套裝效果（等同已裝滿 3 顆）。蕭熇為專屬角色條目；驚飛羽示範技能「小而無相」僅顯示說明。
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+        <button id="randTeam" class="btn">隨機編隊</button>
+        <button id="applyTeam" class="btn">套用 & 開始</button>
+        <button id="closeSetup" class="btn">關閉</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== 常量與顏色 ===================== */
+let GRID_W=12, GRID_H=10;
+document.documentElement.style.setProperty('--w', GRID_W);
+document.documentElement.style.setProperty('--h', GRID_H);
+const CELL=60;
+const board=document.getElementById("board"), actions=document.getElementById("actions");
+const logEl=document.getElementById("log"), turnEl=document.getElementById("turnWho"), sizeTag=document.getElementById("sizeTag"), roundEl=document.getElementById("roundNum");
+const ruleStrictEl=document.getElementById("ruleStrict");
+let EDIT_MODE=false;
+
+const ATTR=["光","暗","幽","雷","冰","火","神","魔"];
+const ATTR_COLOR={光:"#f6d44a",暗:"#b390ff",幽:"#7fd0ff",雷:"#79ff8a",冰:"#a7e3ff",火:"#ff7a6e",神:"#ffdca8",魔:"#ffb3d1"};
+const ADV=1.25, DIS=0.8;
+const TRIAD1=["光","暗","幽"], TRIAD2=["雷","冰","火"];
+const G1=new Set(TRIAD1), G2=new Set(TRIAD2);
+let RULE_MOVE_OR_ACT=true; ruleStrictEl.onchange=()=>{ RULE_MOVE_OR_ACT=ruleStrictEl.checked; log(`規則：移動或行動（二擇一）${RULE_MOVE_OR_ACT?'開':'關'}`); };
+
+function colorAttr(a){return ATTR_COLOR[a]||"#fff";}
+function inside(x,y){return x>=0&&y>=0&&x<GRID_W&&y<GRID_H;}
+function neighbors(x,y){return[{x:x+1,y},{x:x-1,y},{x,y:y+1},{x,y:y-1}].filter(p=>inside(p.x,p.y));}
+function manhattan(a,b){return Math.abs(a.x-b.x)+Math.abs(a.y-b.y);}
+
+/* ===================== 屬性克制 ===================== */
+function triadRel(a,b){for(const T of [TRIAD1,TRIAD2]){const i=T.indexOf(a),j=T.indexOf(b);if(i>-1&&j>-1){if((i+1)%3===j)return 1;if((j+1)%3===i)return -1}}return 0}
+function specialRel(a,b){
+  if(a==="神"){if(G2.has(b))return 1;if(G1.has(b))return -1;}
+  if(a==="魔"){if(G1.has(b))return 1;if(G2.has(b))return -1;}
+  if(b==="神"){if(G2.has(a))return -1;if(G1.has(a))return 1;}
+  if(b==="魔"){if(G1.has(a))return -1;if(G2.has(a))return 1;}
+  return 0;
+}
+function elemMul(a,b){const r=triadRel(a,b)||specialRel(a,b);return r===1?ADV:r===-1?DIS:1}
+
+/* ===================== 地形/障礙/視線 ===================== */
+let blocks=[]; function initBlocks(){blocks=Array.from({length:GRID_H},()=>Array(GRID_W).fill(false));}
+function isBlocked(x,y){return blocks[y]&&blocks[y][x];}
+function toggleBlock(x,y){if(unitAt(x,y))return; blocks[y][x]=!blocks[y][x]; render();}
+function drawBlocks(){for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++)if(isBlocked(x,y)){const d=document.createElement("div");d.style.left=`${x*CELL}px`;d.style.top=`${y*CELL}px`;d.className="tile";const b=document.createElement("div");b.className="blk";d.appendChild(b);board.appendChild(d);}}
+function lineOfSight(ax,ay,bx,by){let x=ax,y=ay,dx=Math.abs(bx-ax),dy=Math.abs(by-ay),sx=ax<bx?1:-1,sy=ay<by?1:-1,err=dx-dy;
+  while(!(x===bx&&y===by)){const e2=2*err;if(e2>-dy){err-=dy;x+=sx}if(e2<dx){err+=dx;y+=sy}if(x===bx&&y===by)break;if(isBlocked(x,y)||unitAt(x,y))return false;}return true}
+
+/* ======= 可持續地形：炎獄（站上去回合結束掉血） ======= */
+let terrains=[]; // {x,y,type:'fire',turns}
+function addTerrain(x,y,type,turns){ if(!inside(x,y) || isBlocked(x,y)) return; terrains.push({x,y,type,turns}); }
+function decayTerrains(){ terrains.forEach(t=>t.turns--); terrains=terrains.filter(t=>t.turns>0); }
+function drawTerrains(){
+  for(const t of terrains){ const d=document.createElement("div"); d.className="tile"; d.style.left=`${t.x*CELL}px`; d.style.top=`${t.y*CELL}px`;
+    if(t.type==='fire'){ const f=document.createElement("div"); f.className="terrain-fire"; d.appendChild(f); }
+    board.appendChild(d);
+  }
+}
+function terrainAt(x,y,type){ return terrains.find(t=>t.x===x && t.y===y && t.type===type); }
+
+/* ===================== 單位與佈陣 ===================== */
+let units=[], selected=null;
+let round=1, phase="idle", skillLock=null;
+// 本回合尚可行動名單
+let alliesLeft=new Set(), enemiesLeft=new Set();
+
+const slots=[
+  {id:"A1", side:"ally", x:0,y:1},{id:"A2", side:"ally", x:1,y:0},{id:"A3", side:"ally", x:2,y:2},
+  {id:"E1", side:"enemy",x:GRID_W-1,y:GRID_H-2},{id:"E2", side:"enemy",x:GRID_W-2,y:GRID_H-1},{id:"E3", side:"enemy",x:GRID_W-3,y:GRID_H-3},
+];
+
+/* >>> MISSING HELPER FIX <<< */
+function setActionStart(u){
+  // Start-of-action snapshot and per-action state reset
+  u.actionStart = { x: u.x, y: u.y };
+  u.hasMoved = false;
+  u.bonusMove = 0;
+  if (!u.tags) u.tags = {};
+  u.tags.moved2 = 0;
+}
+
+const JOBS={
+  "鐵衛":{move:3,min:1,max:1,hp:120,atk:24,def:18, skills:[
+    {id:"guard",name:"守護姿態",type:"self",cd:3,desc:"至下回合開始受傷-50%",use:(u)=>{u.tags.guard=1;log(`${u.id} 守護`)}},
+    {id:"taunt",name:"鐵壁嘲諷",type:"self",cd:3,desc:"本回合嘲諷",use:(u)=>{u.tags.taunt=1;log(`${u.id} 嘲諷`)}},
+    {id:"block",name:"盾擊",type:"attack",cd:2,range:"job",desc:"100%並使敵攻-30%（1回合）",use:(a,d)=>{d.tags.atkdown=1;hit(a,d,1)}},
+  ]},
+  "俠客":{move:3,min:1,max:1,hp:100,atk:30,def:12, skills:[
+    {id:"combo",name:"連擊",type:"attack",cd:3,range:"job",desc:"兩段各80%",use:(a,d)=>{hit(a,d,0.8);if(!d.dead)hit(a,d,0.8)}},
+    {id:"dashcut",name:"突進斬",type:"attack",cd:3,range:2,desc:"射程2；若本次移動≥2格，傷害+30%",use:(a,d)=>{const r=a.tags.moved2?1.3:1.0;hit(a,d,r)}},
+    {id:"bleed",name:"破甲一擊",type:"attack",cd:3,range:"job",desc:"110%並使敵防-30%（1回合）",use:(a,d)=>{d.tags.defdown=1;hit(a,d,1.1)}},
+    {id:"light",name:"輕身",type:"self",cd:3,needPhase:"move",desc:"本次行動的移動力+2",use:(u)=>{u.bonusMove=(u.bonusMove||0)+2;log(`${u.id} 輕身+2`)}}]},
+  "咒師":{move:3,min:2,max:2,hp:90,atk:34,def:8, skills:[
+    {id:"bolt",name:"霜雷咒",type:"attack",cd:2,range:3,desc:"射程3；法術120%",use:(a,d)=>{hit(a,d,1.2)}},
+    {id:"blast",name:"裂冰術",type:"attack",cd:3,range:3,desc:"射程3；法術140%",use:(a,d)=>{hit(a,d,1.4)}},
+    {id:"slow",name:"冰縛",type:"attack",cd:3,range:3,desc:"80%並使移動-1（1回合）",use:(a,d)=>{hit(a,d,0.8);d.tags.slow=1}},
+    {id:"veil",name:"秘術護罩",type:"self",cd:3,desc:"獲得護盾=最大生命20%（1回合）",use:(u)=>{u.tags.shield=Math.floor(u.hpMax*0.2);log(`${u.id} 護盾+${u.tags.shield}`)}}]},
+  "祝由":{move:3,min:2,max:2,hp:95,atk:18,def:10, skills:[
+    {id:"heal",name:"回春",type:"heal",cd:2,range:2,val:40,desc:"射程2；回復我方單體 40",use:(a,t)=>{t.hp=Math.min(t.hpMax,t.hp+40);log(`${a.id} 治療 ${t.id} +40`);render()}},
+    {id:"cleanse",name:"祛痺",type:"self",cd:2,desc:"淨化自身減益",use:(u)=>{u.tags={...u.tags,atkdown:0,defdown:0,slow:0,stun:0};log(`${u.id} 淨化`) }},
+    {id:"haste",name:"迅捷",type:"self",cd:3,desc:"本回合移動力+1",use:(u)=>{u.bonusMove=(u.bonusMove||0)+1;log(`${u.id} 迅捷+1`) }},
+    {id:"rangeheal",name:"遠引回春",type:"heal",cd:3,range:3,val:30,desc:"射程3；回復我方單體 30",use:(a,t)=>{t.hp=Math.min(t.hpMax,t.hp+30);log(`${a.id} 治療 ${t.id} +30`);render()}}]},
+  "羽士":{move:3,min:2,max:2,hp:95,atk:28,def:10, skills:[
+    {id:"pierce",name:"貫通箭",type:"attack",cd:3,range:2,desc:"射程2；130%，無法近戰",use:(a,d)=>{hit(a,d,1.3)}},
+    {id:"aim",name:"瞄準",type:"self",cd:2,desc:"本回合遠程可無視視線 1 次",use:(u)=>{u.tags.aim=1;u.tags.aimCharges=1;log(`${u.id} 瞄準`) }},
+    {id:"repel",name:"驅散箭",type:"attack",cd:3,range:2,desc:"射程2；100%，先移除護盾",use:(a,d)=>{d.tags.shield=0;hit(a,d,1.0)}},
+    {id:"split",name:"散射",type:"attack",cd:3,range:2,desc:"100%，另外對相鄰敵 90%",use:(a,d)=>{hit(a,d,0.9);const n=neighbors(d.x,d.y).map(p=>unitAt(p.x,p.y)).find(u=>u&&u.side!==a.side&&!u.dead);if(n)hit(a,n,0.9)}}]},
+  "御風":{move:5,min:1,max:1,hp:90,atk:32,def:9, skills:[
+    {id:"dash",name:"瞬步",type:"dash",cd:3,needPhase:"move",desc:"未移動時可用；本次行動移動力+2",use:(u)=>{u.bonusMove=(u.bonusMove||0)+2;log(`${u.id} 瞬步+2`) }},
+    {id:"assass",name:"背襲",type:"attack",cd:3,range:"job",desc:"120% 近戰",use:(a,d)=>{hit(a,d,1.2)}},
+    {id:"smoke",name:"煙幕",type:"self",cd:3,desc:"本回合受傷-30%",use:(u)=>{u.tags.smoke=1;log(`${u.id} 煙幕`) }}]},
+  "鬥將":{move:4,min:1,max:1,hp:110,atk:34,def:12, skills:[
+    {id:"berserk",name:"戰意爆發",type:"buff",cd:3,desc:"下一擊傷害+50%且破甲50%（一次）",use:(u)=>{u.tags.berserk={bonus:0.5,pierce:0.5,charges:1};log(`${u.id} 戰意！`) }},
+    {id:"stun",name:"震擊",type:"attack",cd:3,range:"job",desc:"110%，使目標失去下一次移動",use:(a,d)=>{hit(a,d,1.1);d.tags.stun=1}},
+    {id:"guardbreak",name:"碎甲",type:"attack",cd:3,range:"job",desc:"100%，先移除護盾",use:(a,d)=>{d.tags.shield=0;hit(a,d,1.0)}}]},
+  /* ===== 蕭熇（角色條目） ===== */
+  "蕭熇":{move:3,min:1,max:1,hp:125,atk:26,def:22, skills:[
+    {id:"crash",name:"撞陣衝軍",type:"attack",cd:3,range:"job",desc:"自損20%最大HP；0.8×並擊退2、賦遲緩II",use:(a,d)=>{ const cost=Math.max(1,Math.round(a.hpMax*0.2)); a.hp=Math.max(1,a.hp-cost); log(`${a.id} 自損 ${cost}`); hit(a,d,0.8); knockback(a,d,2); d.tags.slow2=1; render(); }},
+    {id:"gale",name:"疾狼掠風",type:"skillAOE",cd:4,range:1,desc:"以自身為中心菱形3 AOE 0.5×；獲護衛；鋪炎獄2回合",use:(a)=>{ const tiles=diamondTiles(a.x,a.y,3); const foes=enemiesOf(a.side).filter(u=>tiles.some(t=>t.x===u.x&&t.y===u.y)); foes.forEach(e=>hit(a,e,0.5)); tiles.forEach(t=>addTerrain(t.x,t.y,'fire',2)); a.tags.guard=1; log(`${a.id} 展開炎獄與護衛`); a.hasActed=true; alliesLeft.delete(a.id); selected=a; endActivation(); }},
+    {id:"dragon",name:"龍嘯九天",type:"skillAOE",cd:5,range:4,desc:"射程4、菱形2 AOE；施放前將防轉攻，0.6×；命中≥3獲炎鎧+護衛",use:(a)=>{ targetAOESelect(a,4,2); }},
+    {id:"defend",name:"誓死捍衛",type:"self",cd:4,desc:"1回合護衛範圍+至2格，獲復仇（反擊+30%）",use:(u)=>{u.tags.guard=1;u.tags.guardRange2=1;u.tags.revenge=1;log(`${u.id} 守護(2)+復仇`) }},
+    {id:"order",name:"蕭門將令",type:"buffTarget",cd:3,range:2,desc:"對2格內友軍：攻防UP（1回合）；若自身無御敵→+1層（展示）",use:(a,t)=>{if(t.side!==a.side){log('僅對友軍');return;} t.tags.buffAtk=1;t.tags.buffDef=1; if(!(a.tags.enemylayer>0)){ a.tags.enemylayer=(a.tags.enemylayer||0)+1; log(`${a.id} 御敵層+1（展示）`);} render(); a.hasActed=true; alliesLeft.delete(a.id); selected=a; endActivation(); }},
+  ]},
+  /* ===== 驚飛羽：示範「小而無相」僅文字 ===== */
+  "驚飛羽":{move:3,min:2,max:2,hp:95,atk:28,def:12, skills:[
+    {id:"xiaoerwuxiang",name:"小而無相",type:"self",cd:2,desc:"選擇 1 個絕學釋放；使用後切換為「怨生剛復」與「山魄索魂」。〈示範用：僅顯示說明〉",use:(u)=>{log("【小而無相】（示範用：僅顯示說明）");}}
+  ]},
+};
+
+function diamondTiles(cx,cy,r){ const out=[]; for(let dx=-r;dx<=r;dx++){const rem=r-Math.abs(dx); for(let dy=-rem;dy<=rem;dy++){const x=cx+dx,y=cy+dy; if(inside(x,y)) out.push({x,y});}} return out; }
+function targetAOESelect(a,rangeR,diamondR){
+  log(`選射程內中心格（射程${rangeR}，菱形${diamondR}）`);
+  phase="skillTarget"; skillLock={__special:"AOEcenter", range:rangeR, diamond:diamondR, caster:a};
+  render();
+  return null;
+}
+
+/* ====== 魂石（三枚效果） ====== */
+const SOULSTONES={
+  "赤練鬼":{label:"赤練鬼（3）",desc:"主動攻擊且目標≥70%氣血：傷害+20%",hooks:{
+    computeAtk:(ctx)=>{ if(ctx.isActive && ctx.defender.hp/ctx.defender.hpMax>=0.70){ ctx.atkMul*=1.20; ctx.log.push("赤練鬼+20%"); } }
+  }},
+  "剛破鬼":{label:"剛破鬼（3）",desc:"周圍3格無友軍：攻+8%／受傷-8%",hooks:{
+    computeAtk:(ctx)=>{ if(noAllyWithin(ctx.attacker,3)) ctx.atkMul*=1.08; }, computeDef:(ctx)=>{ if(noAllyWithin(ctx.defender,3)) ctx.defMul*=0.92; }
+  }},
+  "妄幻":{label:"妄幻（3）",desc:"施放絕學或被攻後疊層：每層全屬+3%（≤5）",hooks:{
+    init:(u)=>{u.tags.mang=0;}, onSkillUse:(ctx)=>{ctx.user.tags.mang=Math.min(5,(ctx.user.tags.mang||0)+1);},
+    onBeHit:(ctx)=>{ctx.defender.tags.mang=Math.min(5,(ctx.defender.tags.mang||0)+1);},
+    computeAtk:(ctx)=>{const s=ctx.attacker.tags.mang||0; if(s) ctx.atkMul*=(1+0.03*s);},
+    computeDef:(ctx)=>{const s=ctx.defender.tags.mang||0; if(s) ctx.defMul*=(1-0.03*s);}
+  }},
+  "鬼面花蛛":{label:"鬼面花蛛（3）",desc:"主攻前50%：賦『遲緩II、蝕魔（法防-30%）』",hooks:{
+    beforeAttack:(ctx)=>{ if(!ctx.isActive) return; if(Math.random()<0.5){ ctx.defender.tags.slow2=1; ctx.defender.tags.mdefDown30=1; ctx.log.push("蛛：遲緩II/蝕魔"); } }
+  }},
+  "九環朱蝮":{label:"九環朱蝮（3）",desc:"主動造成傷害後：給『中毒(10%)』1回合",hooks:{
+    afterAttack:(ctx)=>{ if(ctx.isActive && ctx.didDamage){ ctx.defender.tags.poison10=1; ctx.log.push("朱蝮：中毒"); } }
+  }},
+  "妖術師":{label:"妖術師（3）",desc:"使用傷害絕學後50%使該技CD-2",hooks:{
+    onSkillUse:(ctx)=>{ if(ctx.skill?.isDamage && Math.random()<0.5){ ctx.owner.cd[ctx.skill.id]=Math.max(0,(ctx.owner.cd[ctx.skill.id]||0)-2); ctx.log.push("妖術師：CD-2"); } }
+  }},
+  "荒螫":{label:"荒螫（3）",desc:"普通攻擊傷害+20%",hooks:{ computeAtk:(ctx)=>{ if(!ctx.isSkill) ctx.atkMul*=1.20; } }},
+  "羽魅":{label:"羽魅（3）",desc:"2格內無友軍：傷+12%／受傷-12%",hooks:{
+    computeAtk:(ctx)=>{ if(noAllyWithin(ctx.attacker,2)) ctx.atkMul*=1.12; }, computeDef:(ctx)=>{ if(noAllyWithin(ctx.defender,2)) ctx.defMul*=0.88; }
+  }},
+  "頭狼":{label:"頭狼（3）",desc:"傷+5%；主動傷後：獲『迅捷II（移+2）』",hooks:{
+    computeAtk:(ctx)=>{ ctx.atkMul*=1.05; }, afterAttack:(ctx)=>{ if(ctx.isActive&&ctx.didDamage){ ctx.attacker.tags.haste2=1; } }
+  }},
+  "羅鬼":{label:"羅鬼（3）",desc:"傷+10%；主攻時受傷-10%",hooks:{
+    computeAtk:(ctx)=>{ ctx.atkMul*=1.10; }, computeDef:(ctx)=>{ if(ctx.isActive) ctx.defMul*=0.90; }
+  }},
+  "咒石兵":{label:"咒石兵（3）",desc:"受傷-10%",hooks:{ computeDef:(ctx)=>{ ctx.defMul*=0.90; } }},
+  "冰魔蠍":{label:"冰魔蠍（3）",desc:"被攻時雙防+15%",hooks:{ computeDef:(ctx)=>{ if(!ctx.isActive) ctx.defMul*=0.85; } }},
+};
+const SOUL_IDS=Object.keys(SOULSTONES);
+function noAllyWithin(u,r){ for(const v of units){ if(v.dead||v.side!==u.side||v===u) continue; if(manhattan(u,v)<=r) return false; } return true; }
+
+/* ===================== 佈陣預設 ===================== */
+let setupData={
+  A1:{job:"蕭熇", attr:"火", soul:"羅鬼", skills:["crash","gale","defend"]},
+  A2:{job:"俠客", attr:"光", soul:"頭狼", skills:["combo","light","bleed"]},
+  A3:{job:"祝由", attr:"神", soul:"咒石兵", skills:["heal","haste","cleanse"]},
+  E1:{job:"鐵衛", attr:"暗", soul:"剛破鬼", skills:["guard","taunt","block"]},
+  E2:{job:"羽士", attr:"冰", soul:"鬼面花蛛", skills:["pierce","aim","repel"]},
+  E3:{job:"咒師", attr:"幽", soul:"赤練鬼", skills:["bolt","slow","veil"]},
+};
+
+function mkUnit(slot){
+  const conf=setupData[slot.id], jd=JOBS[conf.job];
+  const u={ id:slot.id, side:slot.side, job:conf.job, attr:conf.attr, soulId:conf.soul,
+    x:slot.x, y:slot.y, hpMax:jd.hp, hp:jd.hp, atk:jd.atk, def:jd.def, min:jd.min, max:jd.max, move:jd.move,
+    cd:{}, tags:{}, bonusMove:0, dead:false, hasMoved:false, hasActed:false,
+    loadout: conf.skills.slice(0,3),
+    turnStart:{x:slot.x,y:slot.y}, actionStart:{x:slot.x,y:slot.y}
+  };
+  u.soul=SOULSTONES[u.soulId]||null; if(u.soul?.hooks?.init) u.soul.hooks.init(u);
+  return u;
+}
+function alliesOf(side){return units.filter(u=>!u.dead && u.side===side)}
+function enemiesOf(side){return units.filter(u=>!u.dead && u.side!==side)}
+function unitAt(x,y){return units.find(u=>!u.dead && u.x===x && u.y===y)}
+
+/* ===================== 回合管理（你任選 ↔ 敵方一隻） ===================== */
+function battleStart(){
+  round=1; roundEl.textContent=round;
+  for(const u of units){ u.hasActed=false; u.hasMoved=false; u.tags.aim=0; u.tags.aimCharges=0; }
+  log("戰鬥開始");
+  turnStart();
+}
+
+function turnStart(){
+  log(`第 ${round} 回合開始`);
+  alliesLeft.clear(); enemiesLeft.clear();
+  for(const u of units){
+    if(u.dead) continue;
+    u.hasActed=false; u.hasMoved=false;
+    u.turnStart={x:u.x,y:u.y}; u.actionStart={x:u.x,y:u.y};
+    (u.side==='ally'?alliesLeft:enemiesLeft).add(u.id);
+    if(u.soul?.hooks?.turnStart) u.soul.hooks.turnStart(u);
+  }
+  decayTerrains();
+  beginPlayerPhase();
+}
+
+function beginPlayerPhase(){
+  selected=null; phase="idle"; turnEl.textContent=`玩家（剩：${alliesLeft.size}）`; render();
+}
+
+function enemyTakesOne(){
+  const enemy = units.find(u=>!u.dead && u.side==='enemy' && enemiesLeft.has(u.id));
+  if(!enemy){
+    if(alliesLeft.size>0){ beginPlayerPhase(); return; }
+    turnEnd(); return;
+  }
+  aiActFor(enemy);
+}
+
+function turnEnd(){
+  // 回合末 DOT / 地形
+  for(const u of units.filter(u=>!u.dead)){
+    if(terrainAt(u.x,u.y,'fire')){
+      const loss=10; u.hp=Math.max(0,u.hp-loss);
+      log(`${u.id} 受炎獄灼燒 -${loss}`);
+      if(u.hp===0){u.dead=true; log(`${u.id} 陣亡！`);}
     }
+  }
+  // 全員 CD-1
+  for(const u of units) for(const k in u.cd) u.cd[k]=Math.max(0,u.cd[k]-1);
 
-    function renderBoard() {
-      board.innerHTML = "";
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          createTile(row, col);
-        }
-      }
-      if (selected) highlightMoves();
-    }
+  if(checkGameOver()) return;
+  round+=1; roundEl.textContent=round;
+  turnStart();
+}
 
-    function handleClick(row, col) {
-      if (row === heroPos.row && col === heroPos.col) {
-        selected = !selected;
-        renderBoard();
-      } else if (selected && isAdjacent(row, col)) {
-        heroPos = { row, col };
-        selected = false;
-        renderBoard();
-      }
-    }
+/* ===================== 繪製 ===================== */
+function render(){
+  board.innerHTML=""; drawBlocks(); drawTerrains();
+  if(selected && phase!=="idle"){
+    if(phase==="move"){ const MR=Math.max(0,selected.move+(selected.bonusMove||0)-(selected.tags.slow?1:0)); for(const t of reach(selected,MR)) paint(t.x,t.y,"move"); }
+    if(phase==="act"){ paintAttackable(selected); }
+    if(phase==="skillTarget" && skillLock && !skillLock.__special){ paintTargetsForSkill(selected, skillLock); }
+    if(phase==="skillTarget" && skillLock?.__special==="AOEcenter"){ paintAOECenters(selected, skillLock.range, skillLock.diamond); }
+  }
+  for(const u of units){
+    const el=document.createElement("div");
+    el.className=`unit ${u.side} ${u.dead?'dead':''} ${selected&&selected.id===u.id?'sel':''}`;
+    el.style.left=`${u.x*CELL}px`; el.style.top=`${u.y*CELL}px`;
+    const soul = SOULSTONES[u.soulId]; const soulName = soul?.label||'無'; const soulDesc=soul?.desc||'';
+    el.innerHTML=`<div>${u.id}${u.hasActed?'✓':''}</div>
+      <div class="badge" title="${soulName}：${soulDesc}" style="color:${colorAttr(u.attr)};border-color:${colorAttr(u.attr)}">${u.job}/${u.attr}｜${soulName}</div>
+      <div class="hpbar"><div class="hp" style="width:${(u.hp/u.hpMax*100).toFixed(0)}%"></div></div>`;
+    el.onclick=()=>onUnitClick(u);
+    board.appendChild(el);
+  }
+  drawActionBar();
+  renderActionBar();
+  trimLog();
+}
+function paint(x,y,cls){const d=document.createElement("div");d.className=`tile ${cls}`;d.style.left=`${x*CELL}px`;d.style.top=`${y*CELL}px`;board.appendChild(d);}
+function paintAttackable(u){
+  for(const e of enemiesOf(u.side)){ const d=manhattan(u,e); const min=(u.job==="羽士")?2:u.min, max=(u.job==="羽士")?2:u.max;
+    if(d>=min&&d<=max){ if(d>1 && !canIgnoreLoS(u)){ if(!lineOfSight(u.x,u.y,e.x,e.y)) continue; } paint(e.x,e.y,"atk"); } } }
+function paintTargetsForSkill(u,sk){
+  const rng=sk.range==="job"?u.max:sk.range, min=sk.type==="attack"?((u.job==="羽士")?2:u.min):1;
+  for(const t of units){ if(t.dead)continue; if(sk.type==="attack"&&t.side===u.side)continue; if(sk.type==="heal"&&t.side!==u.side)continue;
+    const d=manhattan(u,t); if(d>=min&&d<=rng){ if(sk.type==="attack"&&d>1&&!canIgnoreLoS(u)){ if(!lineOfSight(u.x,u.y,t.x,t.y)) continue; } paint(t.x,t.y, sk.type==="attack"?"atk":"move"); }}
+}
+function paintAOECenters(u,rangeR,diamondR){
+  for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){const d=Math.abs(u.x-x)+Math.abs(u.y-y); if(d<=rangeR){ if(d<=1 || canIgnoreLoS(u) || lineOfSight(u.x,u.y,x,y)) paint(x,y,"move"); }}
+}
 
-    function isAdjacent(r, c) {
-      const dr = Math.abs(heroPos.row - r);
-      const dc = Math.abs(heroPos.col - c);
-      return (dr + dc === 1);
-    }
+/* ===================== 路徑 ===================== */
+function reach(u,R){
+  const vis=new Set([`${u.x},${u.y}`]); const Q=[{x:u.x,y:u.y,d:0}], out=[];
+  while(Q.length){ const {x,y,d}=Q.shift(); if(d===R) continue;
+    for(const {x:nx,y:ny} of neighbors(x,y)){ const key=`${nx},${ny}`; if(vis.has(key)) continue; if(isBlocked(nx,ny)||unitAt(nx,ny)) continue;
+      vis.add(key); Q.push({x:nx,y:ny,d:d+1}); if(!(nx===u.x&&ny===u.y)) out.push({x:nx,y:ny}); } }
+  return out;
+}
 
-    function highlightMoves() {
-      const directions = [
-        { dr: -1, dc: 0 },
-        { dr: 1, dc: 0 },
-        { dr: 0, dc: -1 },
-        { dr: 0, dc: 1 }
-      ];
-      directions.forEach(d => {
-        const newRow = heroPos.row + d.dr;
-        const newCol = heroPos.col + d.dc;
-        if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
-          const tile = document.querySelector(`[data-row='${newRow}'][data-col='${newCol}']`);
-          if (!tile.classList.contains("enemy")) {
-            tile.classList.add("highlight");
-          }
-        }
-      });
-    }
+/* ===================== 互動（任選尚未行動的我方） ===================== */
+function onUnitClick(u){
+  if(u.dead || EDIT_MODE) return;
 
-    function resetBoard() {
-      heroPos = { row: 0, col: 0 };
-      selected = false;
-      renderBoard();
-    }
+  // 點敵人當作攻擊目標（需已選中一名我方）
+  if(selected && phase==="act" && u.side!=="ally"){ tryAttack(selected,u); return; }
 
-    renderBoard();
-  </script>
+  // 技能選取目標
+  if(selected && phase==="skillTarget" && skillLock && !skillLock.__special){
+    if(RULE_MOVE_OR_ACT && selected.hasMoved && !["self","dash","buff"].includes(skillLock.type)){ log("嚴格規則：已移動，本次行動不可再行動。"); return; }
+    const d=manhattan(selected,u); const rng=skillLock.range==="job"?selected.max:skillLock.range; const min=(skillLock.type==="attack")?((selected.job==="羽士")?2:selected.min):1;
+    if(d<min || d>rng) return;
+    if(skillLock.type==="attack" && d>1 && !canIgnoreLoS(selected)){ if(!lineOfSight(selected.x,selected.y,u.x,u.y)){ log("視線被阻擋。"); return; } }
+    useSkill(selected,u,skillLock); return;
+  }
+
+  // 選中任一「我方未行動」單位
+  if(u.side!=="ally"){ return; }
+  if(u.hasActed){ log("此單位本回合已行動。"); return; }
+  selected=u; setActionStart(selected); phase="move"; render();
+}
+
+board.addEventListener("click",(ev)=>{
+  const rect=board.getBoundingClientRect(); const x=Math.floor((ev.clientX-rect.left)/CELL), y=Math.floor((ev.clientY-rect.top)/CELL);
+  if(!inside(x,y)) return;
+  if(EDIT_MODE){ if(!unitAt(x,y)) toggleBlock(x,y); return; }
+
+  if(!selected || selected.side!=="ally") return;
+
+  // 蕭熇「龍嘯九天」選中心
+  if(phase==="skillTarget" && skillLock?.__special==="AOEcenter"){
+    const a=skillLock.caster; if(a.id!==selected.id) return; const d=manhattan(a,{x,y});
+    if(d<=skillLock.range){ if(d<=1 || canIgnoreLoS(a) || lineOfSight(a.x,a.y,x,y)){
+      const tiles=diamondTiles(x,y,skillLock.diamond);
+      const foes=enemiesOf(a.side).filter(u=>tiles.some(t=>t.x===u.x&&t.y===u.y)&& checkLoS(a,u));
+      a.tags.tmpAtkBoost=(a.tags.tmpAtkBoost||0)+a.def; foes.forEach(e=>hit(a,e,0.6)); a.tags.tmpAtkBoost=0;
+      if(foes.length>=3){ a.tags.fireArmor=1; a.tags.guard=1; log(`${a.id} 命中${foes.length}：炎鎧+護衛`); }
+      render(); selected.hasActed=true; alliesLeft.delete(selected.id); endActivation(); return;
+    }}
+  }
+
+  if(unitAt(x,y)) return;
+  if(phase!=="move" || selected.hasMoved) return;
+  const MR=Math.max(0,selected.move+(selected.bonusMove||0)-(selected.tags.slow?1:0));
+  const tiles=reach(selected,MR);
+  if(tiles.find(t=>t.x===x&&t.y===y)){
+    const dist=Math.abs(selected.x-x)+Math.abs(selected.y-y);
+    selected.x=x; selected.y=y; selected.hasMoved=true; selected.bonusMove=0;
+    if(dist>=2) selected.tags.moved2=1;
+    log(`${selected.id} 移動到 (${x},${y})`);
+    phase=RULE_MOVE_OR_ACT?"move":"act"; render();
+  }
+});
+
+/* ===================== 動作列 ===================== */
+function drawActionBar(){
+  actions.innerHTML="";
+  if(!selected || selected.side!=="ally") return;
+
+  const atkBtn=btn(`普通攻擊${RULE_MOVE_OR_ACT&&selected.hasMoved?'（禁用：已移動）':''}`, ()=>{
+    if(RULE_MOVE_OR_ACT && selected.hasMoved){ log("嚴格規則：已移動，本次行動不可再行動。"); return; }
+    phase="act"; skillLock=null; render();
+  });
+  if(RULE_MOVE_OR_ACT && selected.hasMoved) atkBtn.disabled=true; actions.appendChild(atkBtn);
+
+  const jd=JOBS[selected.job]; selected.loadout.forEach(skId=>{
+    const sk=jd.skills.find(s=>s.id===skId); if(!sk) return; const left=(selected.cd[sk.id]||0);
+    const b=btn(`${sk.name}`, ()=>{
+      if(left) return;
+      if(RULE_MOVE_OR_ACT && selected.hasMoved && !["self","dash","buff","skillAOE","buffTarget"].includes(sk.type)){ log("嚴格規則：已移動，本次行動不可再行動。"); return; }
+      if(sk.needPhase && sk.needPhase!==phase){ log(`「${sk.name}」需在${sk.needPhase==='move'?'移動階段':'當前階段'}使用。`); return; }
+      skillLock=sk;
+      if(["self","dash","buff"].includes(sk.type)){ useSkill(selected,selected,sk); render(); }
+      else if(sk.type==="skillAOE"){ if(RULE_MOVE_OR_ACT && selected.hasMoved){ log("嚴格規則：已移動，本次行動不可再行動。"); return; } if(sk.id==="gale"){ sk.use(selected); selected.cd[sk.id]=sk.cd; } else if(sk.id==="dragon"){ sk.use(selected); selected.cd[sk.id]=sk.cd; } }
+      else if(sk.type==="buffTarget"){ phase="skillTarget"; render(); }
+      else { phase="skillTarget"; render(); }
+    });
+    b.title = `${sk.desc}${left?`（冷卻剩 ${left}）`:''}`;
+    if(left) b.disabled=true;
+    if(sk.needPhase==="move" && selected.hasMoved) b.disabled=true;
+    actions.appendChild(b);
+  });
+
+  actions.appendChild(btn("撤銷到本次行動開始", ()=>{
+    if(selected){ const back=selected.actionStart; if(back){ selected.x=back.x; selected.y=back.y; }
+      selected.hasMoved=false; selected.bonusMove=0; selected.tags.moved2=0; log(`${selected.id} 撤銷到 (${selected.x},${selected.y})`);}
+    render();
+  }));
+
+  actions.appendChild(btn("結束本次行動", ()=>{ if(selected) endActivation(); }));
+}
+function btn(txt,fn){const b=document.createElement("button");b.className="btn";b.textContent=txt;b.onclick=fn;return b;}
+
+/* ===================== 戰鬥/技能/魂石 ===================== */
+function canIgnoreLoS(u){ if(u.tags.aim && u.tags.aimCharges>0) return true; return false; }
+function consumeIgnoreLoS(u){ if(u.tags.aim && u.tags.aimCharges>0){ u.tags.aimCharges--; return; } }
+function checkLoS(a,d){ const dist=manhattan(a,d); if(dist<=1) return true; if(canIgnoreLoS(a)){ consumeIgnoreLoS(a); return true; } return lineOfSight(a.x,a.y,d.x,d.y); }
+
+function tryAttack(a,d){
+  const d0=manhattan(a,d), min=(a.job==="羽士")?2:a.min, max=(a.job==="羽士")?2:a.max;
+  if(d0<min||d0>max){ log("不在攻擊距離。"); return; }
+  if(!checkLoS(a,d)){ log("視線被阻擋。"); return; }
+  attack(a,d);
+}
+
+function computeDamage(attacker,defender,ratio=1,isSkill=false,skillObj=null){
+  const logBuff=[];
+  const ctx={ attacker, defender, isActive:true, isSkill, skill:skillObj, atkMul:1, defMul:1, log:logBuff, owner:attacker };
+  attacker.soul?.hooks?.computeAtk?.(ctx);
+  defender.soul?.hooks?.computeDef?.(ctx);
+
+  const tmpAtk=attacker.tags?.tmpAtkBoost||0;
+  const bers = attacker.tags?.berserk?.charges>0 ? attacker.tags.berserk : null;
+  const pierce = (bers?bers.pierce:0);
+
+  const defStat=Math.max(0, defender.def * (1 - pierce) * (defender.tags.defdown?0.7:1));
+  let atkStat=Math.round((attacker.atk+tmpAtk) * (attacker.tags.focus?1.2:1) * ctx.atkMul);
+  let base=Math.max(5, Math.round(atkStat - defStat/2));
+  const mul=elemMul(attacker.attr, defender.attr);
+  let guardMul = defender.tags.guard ? 0.5 : 1.0;
+  const bersAdd = bers ? (1 + bers.bonus) : 1;
+  let dmg=Math.max(1, Math.round(base * mul * ratio * guardMul * bersAdd * ctx.defMul));
+
+  if(defender.tags.shield){ const s=defender.tags.shield; const take=Math.min(s,dmg); defender.tags.shield-=take; dmg-=take; if(take>0) log(`${defender.id} 護盾吸收 ${take}`); }
+  return {dmg, logBuff, pierce, mul};
+}
+function baseHit(a,d,ratio=1,isSkill=false,skillObj=null){
+  a.soul?.hooks?.beforeAttack?.({attacker:a,defender:d,isActive:true,isSkill,skill:skillObj});
+  const {dmg,logBuff,pierce,mul}=computeDamage(a,d,ratio,isSkill,skillObj);
+  const hpB=d.hp; d.hp=Math.max(0,d.hp-dmg); const didDamage=d.hp<hpB;
+
+  log(`${a.id}[${a.job}/${a.attr}] → ${d.id}[${d.job}/${d.attr}] 傷害 ${dmg}（屬性×${mul.toFixed(2)}${pierce?`;破甲${(pierce*100)|0}%`:''}）`);
+  if(logBuff.length) log("魂石："+logBuff.join("，"));
+  if(d.hp===0){ d.dead=true; log(`${d.id} 陣亡！`); }
+
+  a.soul?.hooks?.afterAttack?.({attacker:a,defender:d,didDamage,isActive:true,isSkill,skill:skillObj});
+  d.soul?.hooks?.onBeHit?.({attacker:a,defender:d,didDamage,isActive:true,isSkill,skill:skillObj});
+  render();
+}
+function hit(a,d,ratio=1){ baseHit(a,d,ratio,false,null); }
+function attack(a,d){ baseHit(a,d,1.0,false,null); selected.hasActed=true; alliesLeft.delete(selected.id); endActivation(); }
+
+function useSkill(a,target,sk){
+  a.soul?.hooks?.onSkillUse?.({user:a, skill:{id:sk.id,isDamage:sk.type==="attack"||sk.type==="skillAOE"}, owner:a});
+  if(sk.type==="self"||sk.type==="dash"||sk.type==="buff"){ sk.use(a); a.cd[sk.id]=sk.cd; selected.hasActed=true; alliesLeft.delete(selected.id); endActivation(); return; }
+  if(sk.type==="buffTarget"){ sk.use(a,target); a.cd[sk.id]=sk.cd; return; }
+  if(sk.type==="attack"){ baseHit(a,target,1.0,true,sk); a.cd[sk.id]=sk.cd; selected.hasActed=true; alliesLeft.delete(selected.id); endActivation(); return; }
+  if(sk.type==="heal"){ sk.use(a,target); a.cd[sk.id]=sk.cd; selected.hasActed=true; alliesLeft.delete(selected.id); endActivation(); return; }
+  if(sk.type==="skillAOE"){ /* gale/dragon在自身use內處理 → 已呼叫 endActivation */ a.cd[sk.id]=sk.cd; return; }
+}
+
+/* 擊退 */
+function knockback(att,a,dist){
+  let dx=Math.sign(a.x-att.x), dy=Math.sign(a.y-att.y);
+  if(Math.abs(dx)+Math.abs(dy)===2){ if(Math.abs(a.x-att.x) > Math.abs(a.y-att.y)) dy=0; else dx=0; }
+  let nx=a.x, ny=a.y;
+  for(let k=0;k<dist;k++){ const tx=nx+dx, ty=ny+dy; if(!inside(tx,ty) || isBlocked(tx,ty) || unitAt(tx,ty)) break; nx=tx; ny=ty; }
+  if(nx!==a.x || ny!==a.y){ a.x=nx; a.y=ny; log(`${a.id} 被擊退到 (${nx},${ny})`); }
+}
+
+/* ===================== 行動結束 → 交替敵方 ===================== */
+function endActivation(){
+  const u = selected;
+  if(u){
+    u.actionStart={x:u.x,y:u.y}; // 清撤銷點
+    for(const k in u.cd){ u.cd[k]=Math.max(0,u.cd[k]-1); } // 自己技能 -1
+  }
+  selected=null; phase="idle"; render();
+  if(checkGameOver()) return;
+
+  if(enemiesLeft.size>0){ enemyTakesOne(); }
+  else if(alliesLeft.size>0){ beginPlayerPhase(); }
+  else { turnEnd(); }
+}
+
+/* ===================== AI（一次只操作一名） ===================== */
+function aiActFor(actor){
+  if(actor.dead || !enemiesLeft.has(actor.id)){ enemyDone(); return; }
+
+  const foes=alliesOf("ally");
+  const tgtStay=foes.filter(e=>inRange(actor,e) && checkLoS(actor,e))
+                    .sort((a,b)=>elemMul(actor.attr,b.attr)-elemMul(actor.attr,a.attr))[0];
+  if(tgtStay){
+    baseHit(actor,tgtStay,1.0,false,null);
+    actor.hasActed=true; enemiesLeft.delete(actor.id);
+    enemyDone(); 
+    return;
+  }
+
+  const foe=nearest(actor,foes); const step=bestStep(actor,foe,actor.move);
+  if(step){ actor.x=step.x; actor.y=step.y; actor.hasMoved=true; log(`${actor.id} 前進到 (${actor.x},${actor.y})`); render(); }
+  actor.hasActed=true; enemiesLeft.delete(actor.id);
+  enemyDone();
+}
+function enemyDone(){
+  if(alliesLeft.size>0){ beginPlayerPhase(); }
+  else if(enemiesLeft.size>0){ enemyTakesOne(); }
+  else { turnEnd(); }
+}
+function inRange(a,b){const d=manhattan(a,b); if(a.job==="羽士") return d===2; return (d>=a.min && d<=a.max);}
+function nearest(from,list){let best=null,bd=1e9; for(const t of list){const d=manhattan(from,t); if(d<bd){bd=d;best=t;}} return best;}
+function bestStep(u,target,R){const tiles=reach(u,R); tiles.push({x:u.x,y:u.y}); const goal=u.min===1?1:2;
+  tiles.sort((a,b)=>{const da=Math.abs(a.x-target.x)+Math.abs(a.y-target.y);const db=Math.abs(b.x-target.x)+Math.abs(b.y-target.y);return Math.abs(da-goal)-Math.abs(db-goal)}); return tiles[0]||null;}
+
+/* ===================== 行動條 & 戰報 ===================== */
+function renderActionBar(){
+  const A=document.getElementById('barAllies'), E=document.getElementById('barEnemies');
+  if(!A||!E) return;
+  A.innerHTML=''; E.innerHTML='';
+  const allies=units.filter(u=>!u.dead&&u.side==='ally'); const enemies=units.filter(u=>!u.dead&&u.side!=='ally');
+  function chip(u){
+    const d=document.createElement('div');
+    d.className='dot'+(u.side==='enemy'?' foe':'')+(u.hasActed?' done':'');
+    d.textContent = `${u.id}${u.hasActed?'✓':''}`;
+    const soul=SOULSTONES[u.soulId];
+    d.title = `${u.job}/${u.attr}｜魂石：${soul?.label||'無'} — ${soul?.desc||''}`;
+    return d;
+  }
+  allies.forEach(u=>A.appendChild(chip(u)));
+  enemies.forEach(u=>E.appendChild(chip(u)));
+}
+// 戰報可收合 + 上限
+let logCollapsed=false;
+document.getElementById('toggleLog').onclick=()=>{
+  logCollapsed=!logCollapsed;
+  document.getElementById('log').style.display = logCollapsed?'none':'block';
+  document.getElementById('toggleLog').textContent = logCollapsed?'展開紀錄':'收合紀錄';
+};
+function trimLog(){ const maxLines=200; while(logEl.children.length>maxLines){ logEl.removeChild(logEl.firstChild); } }
+
+/* ===================== 勝負 / 日誌 ===================== */
+function checkGameOver(){
+  const A=alliesOf("ally").length>0, B=alliesOf("enemy").length>0;
+  if(!A||!B){ log(!B?"你贏了🎉":"你被擊敗了"); return true; }
+  return false;
+}
+function log(msg){const t=new Date().toLocaleTimeString('zh-TW',{hour12:false}); const d=document.createElement("div"); d.textContent=`[${t}] ${msg}`; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight;}
+
+/* ===================== 設定面板 ===================== */
+const setup=document.getElementById("setup"), setupRowsEl=document.getElementById("setupRows");
+document.getElementById("openSetup").onclick=()=>openSetup();
+document.getElementById("closeSetup").onclick=()=>setup.style.display="none";
+document.getElementById("applyTeam").onclick=()=>{applySetup(); setup.style.display="none"; newGame();};
+document.getElementById("randTeam").onclick=()=>randomizeSetup();
+document.getElementById("clearBlocks").onclick=()=>{ initBlocks(); terrains=[]; render(); };
+document.getElementById("randomBlocks").onclick=()=>{ for(let y=0;y<GRID_H;y++) for(let x=0;x<GRID_W;x++) if(Math.random()<0.07&&!unitAt(x,y)) blocks[y][x]=true; render(); };
+
+function openSetup(){
+  setupRowsEl.innerHTML=""; document.getElementById('mapW').value=GRID_W; document.getElementById('mapH').value=GRID_H;
+  for(const s of slots){
+    const tr=document.createElement("tr");
+    const selJob=mkSelect(Object.keys(JOBS), setupData[s.id].job);
+    const selAttr=mkSelect(ATTR, setupData[s.id].attr);
+    const selSoul=mkSelect(SOUL_IDS, setupData[s.id].soul, k=>SOULSTONES[k].label);
+
+    const skillsBox=document.createElement('div'); skillsBox.className="skills"; const jobSkills=()=>JOBS[selJob.value].skills;
+    function makeSkillSelect(defId){ const sel=document.createElement('select'); jobSkills().forEach(sk=>{const o=document.createElement('option');o.value=sk.id;o.textContent=`${sk.name}（CD${sk.cd}）`;o.title=sk.desc;sel.appendChild(o)}); sel.value=defId||jobSkills()[0].id; return sel; }
+    const s1=makeSkillSelect((setupData[s.id].skills||[])[0]); const s2=makeSkillSelect((setupData[s.id].skills||[])[1]); const s3=makeSkillSelect((setupData[s.id].skills||[])[2]);
+    skillsBox.append(s1,s2,s3);
+    selJob.onchange=()=>{ const js=jobSkills(); [s1,s2,s3].forEach((sel,i)=>{ sel.innerHTML=""; js.forEach(sk=>{const o=document.createElement('option');o.value=sk.id;o.textContent=`${sk.name}（CD${sk.cd}）`;o.title=sk.desc;sel.appendChild(o)}); sel.value=js[Math.min(i,js.length-1)].id; }); };
+
+    tr.innerHTML=`<td>${s.id}</td><td>${s.side==="ally"?"玩家":"電腦"}</td>`;
+    const tdJob=document.createElement("td"); tdJob.appendChild(selJob);
+    const tdAttr=document.createElement("td"); tdAttr.appendChild(selAttr);
+    const tdSoul=document.createElement("td"); tdSoul.appendChild(selSoul);
+    const tdSkills=document.createElement("td"); tdSkills.appendChild(skillsBox);
+    tr.append(tdJob,tdAttr,tdSoul,tdSkills); setupRowsEl.appendChild(tr);
+    tr.dataset.slot=s.id; tr.jobSel=selJob; tr.attrSel=selAttr; tr.soulSel=selSoul; tr.skillSels=[s1,s2,s3];
+  }
+  setup.style.display="flex";
+}
+function mkSelect(list,val,labeler){const s=document.createElement("select"); list.forEach(x=>{const o=document.createElement("option");o.value=x;o.textContent=labeler?labeler(x):x;s.appendChild(o)}); s.value=val; return s;}
+function applySetup(){
+  GRID_W=Math.min(20,Math.max(6,parseInt(document.getElementById('mapW').value||GRID_W,10)));
+  GRID_H=Math.min(20,Math.max(6,parseInt(document.getElementById('mapH').value||GRID_H,10)));
+  document.documentElement.style.setProperty('--w', GRID_W); document.documentElement.style.setProperty('--h', GRID_H);
+  sizeTag.textContent=`${GRID_W}×${GRID_H}`;
+  const rows=[...document.querySelectorAll("#setupRows tr")];
+  rows.forEach(r=>{ setupData[r.dataset.slot]={ job:r.jobSel.value, attr:r.attrSel.value, soul:r.soulSel.value, skills:r.skillSels.map(s=>s.value) }; });
+  slots[3].x=GRID_W-1; slots[3].y=GRID_H-2; slots[4].x=GRID_W-2; slots[4].y=GRID_H-1; slots[5].x=GRID_W-3; slots[5].y=GRID_H-3;
+}
+function randomizeSetup(){
+  const rows=[...document.querySelectorAll("#setupRows tr")];
+  rows.forEach(r=>{ const J=Object.keys(JOBS), A=ATTR, S=SOUL_IDS; r.jobSel.value=J[Math.floor(Math.random()*J.length)]; r.attrSel.value=A[Math.floor(Math.random()*A.length)]; r.soulSel.value=S[Math.floor(Math.random()*S.length)]; r.jobSel.onchange(); });
+}
+
+/* ===================== 控制 / 啟動 ===================== */
+document.getElementById("reset").onclick=()=>newGame();
+document.getElementById("endAct").onclick=()=>{ if(selected && selected.side==="ally"){ endActivation(); } };
+document.getElementById("toggleEdit").onclick=()=>{ EDIT_MODE=!EDIT_MODE; document.getElementById("toggleEdit").textContent=`地形編輯：${EDIT_MODE?'開':'關'}`; };
+
+function seedUnits(){ units=slots.map(mkUnit); }
+function newGame(){
+  seedUnits(); initBlocks(); terrains=[]; selected=null; phase="idle"; round=1; roundEl.textContent=round;
+  render(); logEl.innerHTML=""; log("開始：你可任選未行動單位。"); battleStart();
+}
+
+/* ===================== 測試（重點驗證） ===================== */
+function runSmokeTests(){
+  // 屬性克制
+  console.assert(elemMul('神','冰')===1.25,"神克冰");
+  console.assert(elemMul('神','光')===0.8,"神被光");
+  // setActionStart 存在且能正確清理狀態
+  const tempU={x:1,y:1,actionStart:{},hasMoved:true,bonusMove:2,tags:{moved2:1}};
+  setActionStart(tempU);
+  console.assert(tempU.actionStart.x===1 && tempU.actionStart.y===1,"actionStart snapshot");
+  console.assert(tempU.hasMoved===false,"hasMoved cleared");
+  console.assert(tempU.bonusMove===0,"bonusMove cleared");
+  console.assert(tempU.tags.moved2===0,"moved2 cleared");
+}
+
+/* go */
+newGame(); runSmokeTests();
+</script>
 </body>
 </html>
