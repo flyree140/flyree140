@@ -633,7 +633,7 @@
         let origin = `${currentOptimizedRoute[0].lat},${currentOptimizedRoute[0].lng}`;
         let dest = `${currentOptimizedRoute[currentOptimizedRoute.length-1].lat},${currentOptimizedRoute[currentOptimizedRoute.length-1].lng}`;
         
-        let url = `https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=${origin}&destination=${dest}`;
+        let url = `https://www.google.com/maps/dir/?api=1&travelmode=WALKING&origin=${origin}&destination=${dest}`;
         
         if (currentOptimizedRoute.length > 2) {
             let waypoints = currentOptimizedRoute.slice(1, -1).slice(0, 9).map(p => `${p.lat},${p.lng}`).join('|');
