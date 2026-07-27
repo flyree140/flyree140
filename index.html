@@ -15,7 +15,6 @@
     <style>
         body, html { height: 100%; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; overflow: hidden; }
         #app { display: flex; height: 100vh; flex-direction: column; }
-        
         @media (min-width: 768px) { #app { flex-direction: row; } }
         
         #sidebar { 
@@ -37,21 +36,18 @@
         .place-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .place-card.is-excluded { opacity: 0.5; filter: grayscale(80%); border-left-color: #adb5bd !important; }
         
-        .card-img-container { width: 110px; height: 100px; flex-shrink: 0; background: #f1f3f5; display: flex; align-items: center; justify-content: center; border-right: 1px solid #eee; }
-        .card-img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .card-img-container { width: 110px; height: 100px; flex-shrink: 0; background: #202124; display: flex; align-items: center; justify-content: center; border-right: 1px solid #eee; }
+        .card-img-container img { width: 100%; height: 100%; object-fit: contain; }
         .place-title { font-weight: bold; font-size: 1.05rem; color: #333; margin-bottom: 4px; padding-right: 35px;}
         
-        /* 側邊欄操作按鈕 */
         .card-actions { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 6px; }
         .action-btn { font-size: 1.2rem; cursor: pointer; padding: 2px 5px; transition: transform 0.2s; border-radius: 4px; background: rgba(255,255,255,0.8); }
         .action-btn:hover { transform: scale(1.15); }
 
         .control-panel { margin-bottom: 15px; position: sticky; top: 0; background: white; padding-bottom: 10px; z-index: 10; border-bottom: 1px solid #eee;}
-
         #loader { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); padding: 15px 30px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 2000; font-weight: bold; color: #0d6efd; border: 1px solid #cce5ff;}
         .leaflet-routing-container { display: none !important; }
 
-        /* 地圖乾淨的小圓點標記 */
         .custom-icon { background: none; border: none; }
         .marker-circle {
             width: 26px; height: 26px; border-radius: 50%; border: 2px solid white;
@@ -62,28 +58,37 @@
         .marker-circle.marker-excluded { background-color: #adb5bd !important; color: #fff; }
         .marker-circle:hover { transform: scale(1.2); z-index: 1000 !important; }
 
-        /* 支援多圖左右滑動的彈出卡片 */
-        .leaflet-popup-content-wrapper { border-radius: 8px; padding: 0; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
-        .leaflet-popup-content { margin: 0; width: 280px !important;}
-        .gm-popup-img-box {
-            display: flex; overflow-x: auto; scroll-snap-type: x mandatory; 
-            height: 180px; background-color: #000; scrollbar-width: none; /* Firefox */
+        /* =========================================
+           完美復刻 Google My Maps 彈出視窗 CSS
+           ========================================= */
+        .leaflet-popup-content-wrapper { border-radius: 8px; padding: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .leaflet-popup-content { margin: 0 !important; width: 320px !important; }
+        .gm-popup-header { padding: 12px 35px 12px 15px; font-size: 16px; font-weight: bold; color: #000; word-break: break-all;}
+        .gm-img-wrapper { position: relative; width: 100%; height: 220px; background-color: #202124; display: flex; align-items: center; justify-content: center; }
+        .gm-img-wrapper img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        /* 圖片切換控制列 */
+        .gm-img-controls {
+            position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.7);
+            color: #fff; display: flex; justify-content: center; align-items: center;
+            padding: 6px 0; font-size: 13px; cursor: default;
         }
-        .gm-popup-img-box::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
-        .gm-popup-img-item { flex: 0 0 100%; scroll-snap-align: center; display: flex; align-items: center; justify-content: center; }
-        .gm-popup-img-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .gm-popup-info { padding: 12px 15px 15px 15px; }
-        .gm-popup-title { font-size: 16px; font-weight: bold; color: #202124; margin-bottom: 8px; }
-        .gm-popup-note { font-size: 13px; color: #5f6368; line-height: 1.5; white-space: pre-wrap; margin: 0;}
-        .leaflet-popup-close-button { color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8); right: 5px !important; top: 5px !important; font-size: 20px !important;}
+        .gm-ctrl-btn { cursor: pointer; padding: 0 15px; font-weight: bold; font-size: 14px; user-select: none; }
+        .gm-ctrl-btn:hover { color: #ccc; }
+        
+        .gm-info-table { width: 100%; padding: 12px 15px; font-size: 13px; border-collapse: separate; border-spacing: 0 8px; }
+        .gm-info-table td { vertical-align: top; line-height: 1.5; color: #3c4043; }
+        .gm-info-table td:first-child { font-weight: bold; color: #000; width: 35%; white-space: nowrap; }
+        
+        .leaflet-popup-close-button { color: #70757a !important; font-size: 20px !important; top: 8px !important; right: 8px !important; }
+        .leaflet-popup-close-button:hover { color: #000 !important; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <!-- 左側面板 -->
     <div id="sidebar">
-        <h4 class="mb-3 text-dark fw-bold">🗺️ 關西之旅</h4>
+        <h4 class="mb-3 text-dark fw-bold">🗺️關西之旅</h4>
         <div class="control-panel">
             <label class="form-label mb-1 text-secondary fw-bold" style="font-size: 0.85rem;">1. 選擇旅遊區域：</label>
             <select id="day-select" class="form-select mb-3 shadow-sm border-primary">
@@ -91,26 +96,24 @@
             </select>
             
             <div id="start-panel" style="display: none;">
-                <label class="form-label mb-1 text-secondary fw-bold" style="font-size: 0.85rem;">2. 選擇你要從哪裡開始 (已過濾排除景點)：</label>
+                <label class="form-label mb-1 text-secondary fw-bold" style="font-size: 0.85rem;">2. 選擇起點 (已過濾排除景點)：</label>
                 <select id="start-select" class="form-select mb-3 shadow-sm border-primary"></select>
                 
-                <button id="btn-route" class="btn btn-primary w-100 mb-2 fw-bold shadow-sm py-2">🚶 自動規劃走路路線 (不含排除)</button>
-                <button id="btn-nav" class="btn btn-success w-100 fw-bold shadow-sm py-2" style="display: none;">📱 傳送至 Google Maps 導航</button>
+                <button id="btn-route" class="btn btn-primary w-100 mb-2 fw-bold shadow-sm py-2">🚶 自動規劃精準路線</button>
+                <button id="btn-nav" class="btn btn-success w-100 fw-bold shadow-sm py-2" style="display: none;">📱 傳送至 Google Maps</button>
             </div>
             
             <div id="route-warning" class="text-danger mt-2" style="font-size: 0.8rem; display:none; background: #fff3f3; padding: 8px; border-radius: 5px; border: 1px solid #ffc107;">
-                ⚠️ 提示：部分景點跨距過遠，系統已自動轉為虛線連接。
+                💡 提示：超過 3 公里的跨區移動，系統已自動轉為「搭車虛線」以保持地圖整潔。
             </div>
         </div>
         <div id="place-list" class="pb-4"></div>
     </div>
-
-    <!-- 右側地圖 -->
     <div id="map"></div>
-    <div id="loader"><i class="bi bi-arrow-repeat spin"></i> 努力畫出最順街道中...</div>
+    <div id="loader"><i class="bi bi-arrow-repeat spin"></i> 努力畫出精準路線中...</div>
 </div>
 
-<!-- 編輯視窗 Modal (支援多圖預覽) -->
+<!-- 編輯視窗 -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -132,7 +135,6 @@
             <label class="form-label fw-bold text-secondary">上傳照片 (可複選多張)</label>
             <input class="form-control" type="file" id="edit-image" accept="image/*" multiple>
             <div id="preview-container" class="mt-3" style="display:none; background: #f8f9fa; padding: 10px; border-radius: 8px; overflow-x: auto; white-space: nowrap;">
-                <!-- 預覽圖片放這裡 -->
             </div>
         </div>
       </div>
@@ -144,146 +146,165 @@
   </div>
 </div>
 
-<!-- Scripts -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // 預設資料
-    const defaultPlaces = [
-      { day: "大阪旅遊🔵", name: "HOKA 心齋橋旗艦店", lat: 34.6766, lng: 135.5015, img: "https://img.youtube.com/vi/_CTSpkCAW48/hqdefault.jpg", note: "(HOKA)買鞋子 日本最大旗艦店" },
-      { day: "大阪旅遊🔵", name: "Seria 長堀店(心齋橋)", lat: 34.6748, lng: 135.4998, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5OaI4xRgbRvtBVOWVEmrUVBHnc-QNgCpoHcMsqnTYtzPcdbO5ztq4O80nZAgy5SUBk9C4K8-iuI802gOjpNL3SFMNH8qVcRLM2meIZG1SdofqiA9oiAQum7cY5vgKhZxyUnblMBWtXDWKegHqIuy6ykCwdiEGWNqbRay1j1DWtwOvgmsUzI-YC-7ZsxIWJFPsJ82-QwnbrcxfxwV6kgO1anJGkIjPs6bcK_dMmEiMbORlOXI2tB-lPBzU?authuser=0&fife=s16383", note: "(Seria)類似大創的百元平價超市" },
-      { day: "大阪旅遊🔵", name: "Seria なんばCITY店", lat: 34.662634, lng: 135.502824, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6PddQlo0EHygqR3Z6b7ZJlNBMIeiAqCPm-EvHpAZMbFxLYJe6kxBkwzlWXQor1gYFQqeJGF6NclIQRJdtDfvsGmtAZc8SDa2bG9sSJvbSoepqCaU6yptqDo5TXjQ8JQ8bRnAJCIoq2jfapt8GNUmqFKV318Jj3snLfC59hpMEEW_qSSi3UuTUZIyRDQtLk2RKO0vxuG4k0i4YGL2SYZr8Ntl2NdwInMMFBbtPxWMsFMoFKDdNLpW1w5RI?authuser=0&fife=s16383", note: "類似大創的百元平價超市便宜好買" },
-      { day: "大阪旅遊🔵", name: "東洋亭 難波店", lat: 34.6644, lng: 135.5013, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7POs9LyxHGqmMdt8bYKLtGvk2ZYp3D84yUWNQKYly_S2vwl5nP-O2PgeCdY10QxXTGBS9HS1syT4xbH64h1fW9-u8bW4KxOuW_8DDvZafobxR7SgNT7EDuustrL7hxDZURj6VPTA_7jkXq8paFngsLk1TXQnWlOdPfMy-ORGBRbDGeydXiSQLtvlWdXvFrFiGW2SojfBVLMJY16dD8Dy6oqkspnFtucIqMOymYdD9m5tSNC3WI0epg4ZA?authuser=0&fife=s16383", note: "(東洋亭)難波高島屋內 招牌漢堡排必吃" },
-      { day: "大阪旅遊🔵", name: "UNIQLO 心齋橋旗艦店", lat: 34.6738, lng: 135.5011, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7RlbJH-p1hDU2H_GRAKVbv-Ye_DwOtvQ_u3NF1_3zW6FGru8ybr4-n_ZrSr8Ss2_M9s17c2dwjC1c_CYR58AJRV5-UoNMNeMk9Az3DUnegYtBFFGDappcs9aSzsZ25TWdRo6Gyj3aUbxkzXfVThdztnhJpu9mkyRwKRSQS2ONG6wYBGVlKQn-h3Ypa8tq7ulqZdOG8y7D38HFnvFpDdod3xEH5Giq5kh_b2d15yVIK9H0hEmZg678-yU4?authuser=0&fife=s16383", note: "有UTme!服務可自製衣服" },
-      { day: "梅田", name: "#C-pla 梅田茶屋町店", lat: 34.7078, lng: 135.4996, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6oCXUTb1UwyJ58d5rt-A_PvFAwBV4f3mfVPXOkso_dX-MKmW8eACHz8khqEB9tffWocMNxeevksJyL7QLtFGAOG3p5vIYvlj4AQP5pCiIB4OIaklBNnOqpCOKEryJqD1kO4gNjy8sVyTGyH4ooGrCsSScbXMxFFy5DCFp0tVPYBjyJ8K6ysy-Xx1Q9h8499e9sK9_nmGWlrOkukPWsgwvLcYYPk1aaAXluzxJBwYztTus0GZ8awwBhunc?authuser=0&fife=s16383", note: "超多扭蛋機的大型專賣店" },
-      { day: "大阪旅遊🔵", name: "成城石井 なんばCITY店", lat: 34.662756, lng: 135.502043, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7ua09hLk2nTNFwQbbR2Nk_caZut6ou2o9CE1hR5FZirh2LgNUUK6ngTskgkJff3Id7GGG3sNOCkDZAf4mdCED-3jw48EJzTKriKSyk1jOJfBQvQltwfeZzE3TgkyuhbzOGOzLiL78lc-5i02Ofw9t88GvnPUx-mhWGnOWXjF9K2vfWpUJHlTo4tdCCl8_F_Mh1XoTMbwMAFwaJ6-228_yjjFgmm5FqJTuDOKr22rM9w6-fUXTypoYRizI?authuser=0&fife=s16383", note: "B2F找大谷翔平愛吃的優格" },
-      { day: "大阪旅遊🔵", name: "Cafe+82 大阪店(心齋橋)", lat: 34.6769, lng: 135.4952, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5mkoKz1Jca-niEGe4GP3g5PslZqUfMyhMkUXRCBz1uBr6bdNKDLxp_HIo9tjOAmwCvO6TGpN9CGgBJ2rq8nIN_J_MzV-R6ttQ4dPLi59RX_0FPB8Oth8BxT-jub1yt4mO2tYExeUh0CsXZDf44_7YmaVVMJBCUipwpHZPcjfvpN-VUI8TP74Q2TAkh9QPXzA3GqSyNioT2ZlE6FowEXhVFxAsQ_OCzP2bPuaOoECvRTD-5-gPfSpK3Sew?authuser=0&fife=s16383", note: "有卡皮巴拉(水豚)甜點" },
-      { day: "大阪旅遊🔵", name: "Bic camera 難波店", lat: 34.666673, lng: 135.502568, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5mxDlBQphepBNgWJjbd7kg19cDQfL9FI5KP2LfLwWc3__gq6265P44iRJLypYYLLD8pXl4cSTKae_POPu-fgBbiWEY3F5c0Uz2PtERq0yzYoDXQWokEgoVF0GB3Ufp8J4esWgkMjXtIWQwA8fPxLvI6MqykpxexxAJRZ7o73-c8fceiaytjUg1qb2xg7Hvkv1ezgmQ4ihBV9ABZaKF1POvnG1sxZGfAumY77VpS70qHovHnmRbssyZIFg?authuser=0&fife=s16383", note: "hello kitty娃娃環保袋、刮痧梳子" },
-      { day: "大阪旅遊🔵", name: "難波 Loft (なんばロフト)", lat: 34.6612, lng: 135.5016, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6aRWChOlz9CGuf2VHs6_NWLS8YyWE9zUB5YpLKUpQvCJJGsT4nkLMD_3dGUEJtPU6u4PHsTgm1JEeYWsu2mpqZj4iX9TSxRrIiZi31RuIfYu1BF_C0ebxqTUJIVdl5hlC9LaK4C5cJg70M2n2RYL_OMKG6hmU1pnwCEtW82jrgKcBHuNPoPGwATmJ6dQmL7NmctcuLCh5zvxQo2DTS6d5gC2aKkEJaQz5QKIqH9nK2is-yBXbDMhaBWuI?authuser=0&fife=s16383", note: "5樓 調味料、刮痧梳子" },
-      { day: "大阪旅遊🔵", name: "木津市場", lat: 34.6562, lng: 135.4975, img: "https://img.youtube.com/vi/PUAYSt6NB24/hqdefault.jpg", note: "酥湖啦 海鮮" },
-      { day: "大阪旅遊🔵", name: "3 coin plus+難波", lat: 34.662773, lng: 135.502515, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7wM3jEL5Zv_uF4Mz42yXBmEY94poTp6dfSyRsCd7FcX0DVCvSQE7EqrlT9PWHQyXtaCu9a2WbUgy9FUj-JDHqQbVV6uKqrvDbd92gowXchgstLAKZaULzqzFNHzKAT9iAOGMPHGBO9-Tz_tQimWQTPLOQG-jqhepPNRto1L8hoogEVsIXdrzdKqdgA05TvrJnjtHGKj-oD8aJvThd3aLfigLIw4W3OZVGnz93tBU4VYgP7PH3D9nt_OBI?authuser=0&fife=s16383", note: "(3 coin) 蛋蛋器" },
-      { day: "大阪旅遊🔵", name: "WORKMAN Girl", lat: 34.662334, lng: 135.502899, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR69dN6OKBjSglWTlnj87Yi_9lVwKEZhKicxCd0uORtKixJ-aTfS06f4n40beuIsx1vW6XRPeipwKDxaNIOeWmPL6WscQBsk_pylLWK2c9xeqwxBiQNQ5-ILhbCwZasgN1MzTMijHflblDJVBMWwxFf8ZgCXGmMY4xV0FBnrrtXuZU06RND2lOthzmOlp8Oskeh-x3pBHmqlJFiLO4xyyX_ulwJORpTDoHZXzD8eQIcSOHEs1BDjdSheonw?authuser=0&fife=s16383", note: "(WORKMAN)南館2樓 防曬衣" },
-      { day: "大阪旅遊🔵", name: "TsuruINN民宿", lat: 34.6366, lng: 135.4962, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4RXT4ic99WPtHRDWPNJQFbGOvUAYQyPnshsqblr42FEIadU9tlvMUuPTCysTcFMosY9MuzxNeH8OZdLKgzh4jC2yZ8-yd_OAebG_0lbUj4Bho6egdauKfdBbhkcJoqzasGyZfWAs693GOhCTZWvyCgGvZjgt3WH1ynj_ygjlDyc7ialZe2fo21APfc0LXHjH716jafnq961ILv16aYHOVvN62xzUbsEGcbvMIb9xSuUUQ1Mr6nbO9HIT8?authuser=0&fife=s16383", note: "6天5夜住宿民宿" },
-      { day: "大阪旅遊🔵", name: "客美多 道頓堀店", lat: 34.6687, lng: 135.5015, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6uY2kmzArDMdJdn9haJ-lXRrBdvVdq2cm19ijJt1xUP3aSU4T_8MBMmGjMKcEx_N-qVxj7ovtJ1678QrkyyAYoCeEGnXeh9SpS36J2vfIufcZRciCINCELQPnimfZmfEIQNjNNXEz5aDCo_kYCcLo9m9DJVBYUtyAiPbs2Jl5EJ0jRHVXHnqA2eC8eG8j0iJjLKjLRCT_3EYLQIP-54LaqPWFL-RXmJYA62r4GvdMXrHJJRKdrMgfTHEA?authuser=0&fife=s16383", note: "2樓 NO.1 炸雞" },
-      { day: "大阪旅遊🔵", name: "客美多 難波city店", lat: 34.662385, lng: 135.502338, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4LjAe53uUOs77qgq4A3BiZQQREc7dLY34cmbwHKUsej8VerMdVGTEGSH7N72VJTqleaqsHOgzcxK-_bVCjEClsSYAChxphRYpMsO7yhKIRmpqmnTNSx_luqNVOCLR-QsGNHeFoUIsKX538NNSg7UIgdDKE5fHSSd0f8Dp3xh-Q4qsnht0ge1T1jTZNwmtuCEFUBJuPu15q0idi2vK8ofLxfTVvvo3yg8jWBOgK6lJLLF83YTP2HTERpYo?authuser=0&fife=s16383", note: "1樓 NO.1炸雞" },
-      { day: "大阪旅遊🔵", name: "KIDDY LAND 大阪心齋橋", lat: 34.674081, lng: 135.501060, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7ghaOkBxevn1d1gHYE9k6JNpwxf5A_YkIOfrt2AVYq53XnbT-td2HwcpXNr9eDE-IttWDCf_zSl8-8qyDBqDSBDoSBTlkMW9FibKSKRfI_LFtLSXzRlfzF0SxbbQSkqy_Ve81ErOw39KK3eKoBlmjFOG5ev0JCogHcLjEbqDDvaKjAyQbgCo21FZArXxnzgawaEJ21EjqrVks4rzGFOUh5CHuc8CMRjIV5-zhkQNs-TB_IOI3BL7an0yo?authuser=0&fife=s16383", note: "PARCO 5樓 設有蒙奇奇" },
-      { day: "大阪旅遊🔵", name: "BAPE 心齋橋", lat: 34.6781, lng: 135.4988, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6oLRRaXI5XtsMEN6DTGr7LFExA-2MYxOtyjOi4VC6ZdX1N00yCc1-VMo6cOEIK38TWgFB7A2tNff2ADKXK5zbccJtITW0SMKxFxWoHIskNsOA9qltBkg79S4gepzIt1OE5G5sMmSa3yARd0FUiAN53iZisMEmqk8QdMCsU4o8EO99tp1SSTw7pXWA-LPLQg-N2mC9Ie6QpjwtAFKuiY-OgvuHRsx2lI_EL-ZnlLVxwaUD12TclCDKhr0o?authuser=0&fife=s16383", note: "鞋子服飾 衣服配件" },
-      { day: "大阪旅遊🔵", name: "BAPE 道頓堀", lat: 34.6698, lng: 135.4947, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7KtblKe1PczftU8F4PFFAndZo99rVwhVW36_kL4qY4XQzIXENAardxUdKjiObvp2PFEvl4ZEGraHg-hUn6pDzLl6H4f2HkQiUdKMGqTeVs5Coyi6Zxrc3zJLBEEKM47NNf9VgQwNiWL97iPujLrVtAVjBAYVawYDasOy0QyUYWpF53jK6tFpqPq_f_4W1oW_moPRPMOYJPswWfmsHKuLBiYa9KLQqS7TW3QUCjkav7c452wnbC0biqQ2w?authuser=0&fife=s16383", note: "鞋子服飾 衣服配件" },
-      { day: "大阪旅遊🔵", name: "巴黎山城Paris Miki", lat: 34.6726, lng: 135.5012, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5iUlgcorufnFjDs-0lhxGHf_Uu2nmik-UluR6rtFM87blgqI3WRLZGuAZlwXnLQBbc-vdcMjLYKo2G0mZqhCuv2g1xt8SrkhY-Va9ovquHjIxsVGbq2ng4wJcdG9NtWwyLU09S1wnowJda3U83w0jsLdGemQzu1R6mhM6I_U6npBTpvi7NN99orFq7XthRMHFKk5FZOlaC55Gz8HJepG9vcaHCiT1_2mU9gt2xSBufvGShn6WZbJiKG3I?authuser=0&fife=s16383", note: "設有雷朋眼鏡區" },
-      { day: "大阪旅遊🔵", name: "HANDS 心齋橋", lat: 34.673733, lng: 135.501092, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7ETGpFyspElgxfrn7zF9YoC6VxfhDwKVTNqc_HYM1Ps9iimmRXmeUtZ5pjiqejJATD9LN2b7AVGUXFLFNbZCfXKPmYZwlCUYuVHzOEZtTUBmkgFBr2c6m72rf4py7Hh7hBL5nRHJSMQR6auRgbiyPKPoWpctbVem9ZO-34xjG0doQWK2Mxz7jsewyIOb5p52zytPElYRp6ie92vmQF6Ut9ZUKlhM_i3TWlN1luof5LbyGFcVW1Ba1XfrY?authuser=0&fife=s16383", note: "擠補充袋神器PARCO 9～11樓" },
-      { day: "大阪旅遊🔵", name: "大阪燒肉南大門", lat: 34.6713, lng: 135.5029, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5UyWYiOQu5bwojUBbpygl3B9P2hxWRX-9tuywRpNC4HJpBO9XmsqdsfORK4w8TheEOTzIsr64km1Pg3mLwj8Bgzh9G7Xavs9rwXE8-7ARAMt7OtFfv9bMITN7m_jFTY0XGwSwvaYeY_Nxls7T3LuscALqgEhB9oRyA06mQ9ePzbQ5VH5DV3MXvkdfe0H3Gh_fY-Pw7wdNblcIu9VQjzz_FXIHXRSPhjrjDqM-UI9_cqaeZLeyneq2DoLU?authuser=0&fife=s16383", note: "心齋橋大推燒肉" },
-      { day: "大阪旅遊🔵", name: "眼鏡市場 心斎橋本店", lat: 34.6716, lng: 135.5012, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR66FjqBt3LLh3TsCcTqKxG2OeOPA9irWmskJRQblMU-fxRM0AU8P8yzyBge2z1Fe0knvi-an7uoNrRZ4qUs7BSdcSRlBWU27pAbbDvyyvxN_X2k37k4u98iLFIX0nDlNu3PaiNPfERV4C9Jje4sRKmMT_9QuVT7GXsNB1O2wfMtE-Sq4648CFUKOUzi-bC7RkgAwpdNR1p9Kvzi9SBYIUgN-jSSanxMr2bHhmSxWWY4Za7Ull8c-2jQPF8?authuser=0&fife=s16383", note: "碰運氣看看有沒有雷朋眼鏡" },
-      { day: "大阪旅遊🔵", name: "りくろーおじさんの店", lat: 34.6657, lng: 135.5010, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6kRwhmRkHxpVjxdVCkAwoI4jSFBYEzbzCWuPR00KoZnLU9BvWLhZozVeiHUukRyVXplbMl1H5gTw8x7UEyL-CDSmgo8FfeH2b2Au1f3n8Y8hGPsaoYTYzuCxGfVwy0BlKCJ_jksuyBoRmFdDgU0pM76x_EqFgKkZvkXuhZLMyl76rdf6JFp9rSGSzyWQ7Kp4WfYXJonh_3XRVg96032PtqCAMaxh7ElMWSTYv9w0HqQF9qxzShuJDC3_E?authuser=0&fife=s16383", note: "老爺爺蛋糕" },
-      { day: "大阪旅遊🔵", name: "SIROTAN", lat: 34.6672, lng: 135.5022, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4uaALAMNlvpDaswtRzSXJ57LQxvH4NZ-R5ZYUXxsjrCtWgO-zc0bKt2D-jHbUMi3SXld184QRnvZ7G8PUDGx09F3oAEGj-utCo8BZKi9EkgCAilG97SzTCLLb0JfRMesuBlpwi-nf-BT2atVC4d8Hz19dhVymPsLtZeVdrJPcY_6WEo3QF_afThlAj5FOzOKxCNmokbCXpPqriWl9Gig6bdQychImM7KDyQR97E1RKhdZpS5pSGVgWoSM?authuser=0&fife=s16383", note: "獺獺的店 在地下街" },
-      { day: "大阪旅遊🔵", name: "topologie專賣店", lat: 34.673911, lng: 135.501188, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5qEutX9lR5cicFRuuE0Z_MHokADlw6iIF8GJM6k-Pwm4Prbnyf4WZ0Hags_3joOr4m0rlHknaUM7qyy3l18u524aM7iXGl-hM5juZZzSSP686eV-oGHTfqDm2kYL9z5keHVxTh5q68DWoDubiwFvqoODbeZpEfkAmL0h-DOgUOjT0_osW1S071BfAk4KU1HF7buXKOk84HN6aF7dBhsU8RCHXKs6_sLj45v4JVcPHBdU32paf1bJsbW5o?authuser=0&fife=s16383", note: "心齋橋PARCO B1F" },
-      { day: "大阪旅遊🔵", name: "Shabucho壽喜燒", lat: 34.6725, lng: 135.5034, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6V0Q7ZQRlbKDumIQ4iQnj4XlpUICZfG_LcT6ZaQ-HmeWB6sI-YCUqa_qEv5uqzz6rdBNMmculVyMucQshxsC08_b0fvT3AWTFqsS1eRZlOxQoKrJQgB-OmIjj0VUfW-lygyTDtNyubfSkEhs3_hNplATowlknyK9d0WSZWnK5EHpWDPDquoDOIahf305mEEEl_gQrYpiFAqf6tn8n1M9g5dJ-BBwIP-KjYiwIQ6MeA09Y53tKE9KHNffs?authuser=0&fife=s16383", note: "A5和牛好吃" },
-      { day: "大阪旅遊🔵", name: "千代松勝蓋飯", lat: 34.6677, lng: 135.5037, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4gWkoPtDI73Sk90sYFPifDDGQnqiiP90W0gN3Dr9DuCK0-2ka9VT9VDYK0bk-ev0CnwWKOCR5LI-HERAS5ze1aIvPGsmeRieVyAOeSp5w7rMou3BVw2dU9vv5jSj3nWVuCSrfaIQrqs5ybaLHscI_tgIXPgyLHd2iVP9CFn7586rqqxf9s-pqxjtRSX3x3kyncxoHqPYOf_WXJXlROa8HbNhMa_2JtGl1UYQLAX7cTg9uXc73b2MY5H2s?authuser=0&fife=s16383", note: "大阪炸豬排 道頓堀本店" },
-      { day: "大阪旅遊🔵", name: "神座拉麵", lat: 34.674074, lng: 135.500590, img: "", note: "心齋橋 PARCO 店 B2" },
-      { day: "大阪旅遊🔵", name: "神座拉麵 道頓堀本店", lat: 34.6685, lng: 135.5025, img: "", note: "固力果跑跑人附近" },
-      { day: "大阪旅遊🔵", name: "難波八阪神社", lat: 34.6615, lng: 135.4968, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6yX1oEYyxubNB-gHmBi_lCK34GAHVFO7OR1ndaCcpn_BrDuWmRAZlNoEtB9_DYn1tpAKNQVBR8akRBQbuOWamoV90M9b746XocC_IKsL35R98LObhT4sZG3B5vJb-2GzAzX2UTU_oqNaKOSS9nsBPCpRVi8FcOgRthpTm6ek0mE1I0zyMMyGKk77UXK2-wWG6PoAHy_vEVF4SB_kaxi6eNoEr3cpnuIfNgD4-2GCIHZsXJwhgm4oV8ZTA?authuser=0&fife=s16383", note: "獅子頭神社" },
-      { day: "大阪旅遊🔵", name: "Snoopy Town Shop", lat: 34.673713, lng: 135.500679, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4BJsklllwlYiztGC-dvprowWa1nLXIFt5wcBsmVT5YY8a5RfoXG6DWOW_uv6PzH1DwV0GQWqzCsGFHijRSd8b9atWfAUYZ9-gT5QMUQQx1VSeFBRUeLHVnssFnqQ3JLX8fjrXJaEQ875ndj5QSAufIworLtaWJzVDJwgLUhxTdTsDFOU3IK1loeVwWMaej_HrbFLXF0vhwIdqYgwiN2AZlM-BSq5B6X9s2uh7nvZTK517_PqmTyH3SDcM?authuser=0&fife=s16383", note: "在百貨PARCO 6F" },
-      { day: "大阪旅遊🔵", name: "Cafe LUMINOUS", lat: 34.6732, lng: 135.5030, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5tFKXNGQ_LCwKamIBYAeIbN4XxFg1gKkLsPOx1te9xdR-KTZVeNU9_nKQd6sm7iK87FK3N8fWPtgUm2clTs_-YF42cIAfIJ3ohKOBiFYBVs3MIE6pxFmoevGLZV_c8MEw6E6m0s1BGDU-tHKhU5LJTB0CLIP_Y_SgSmuBMQrYjbz6kfw6W-C9B7KlKjjFwGVOcwbH4X3vtObmC_503xMcgx9x-cUUDMMNOn_Y7VZIDVxRkwzeXpf3lb4Q?authuser=0&fife=s16383", note: "千層酥 6F" },
-      { day: "大阪旅遊🔵", name: "唐吉訶德 道頓堀店", lat: 34.6692, lng: 135.5024, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4ful6eEC3yVTX6yFZwUTO_6uJ71CFNrcWRN6ebZeMJx2mNG0RH3diXac6vEN6wodCMqfwgcXo_PWUh5zs4osH4esf4L4SNI4o0e1053HUvyFbmT09IVWCI8nkUxQ-6-_bBepPn2X2YaXAuEBA_3p4CzXERoDZk23-f8aemjXPaeQIqrjyUA8teCCk9AudxAK4cJeIy0FGU0AUpzfZDyjG1r0N0gxYWe-7KDHTKLjGmY36oC6j9b4RMR_8?authuser=0&fife=s16383", note: "有摩天輪的那個" },
-      { day: "大阪旅遊🔵", name: "唐吉訶德 道頓堀御堂筋", lat: 34.6686, lng: 135.4998, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7QFENEjlMUjDMRyYsn3XiFNzDZqkVUXf8Rd4KEG6grg6jfe1t7IONN7AGVw8vH4mTfK1ZBpUNIjIccGrCBAEwsSGxim3RzNGFn-sjLyf3pk9iXQOiBk61QZosJZonoCYOzawFE6AWgOZ90zrTRpoDrUfPkoWNNuXDSggbDYSTOmHDKmN_B4qDA0rU3yKkpDqQghKpg26QgHfRCFAkKPmwDh9STiwjVzDvBG40pYVm_PR2V8tmqGQpH-yM?authuser=0&fife=s16383", note: "也很近 很大間" },
-      { day: "大阪旅遊🔵", name: "驚安殿堂 唐吉訶德", lat: 34.6652, lng: 135.5031, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6GqkVDs7JRi8AG_wrWoNy6On0j6AE5rktpK7245Al6kPllquPxg1yyfCUjYwD4HPhVq0vdawMSczNXmfgs-JoJsQKUJTKgPFIYEY54IIEyOjp5nWGPf-Vvg__EswcZWBOITMV1NrI49CMGjLWjjC5DKV7YC0qKeBcKXlHjE6pxlZOFOE8zPSIpi30i7JLcx-8sOCxuwRCBV1zfE6nNrOTRchSkk7LEPKf_OoH2Cqpz8bBdacc9nJcBUe4?authuser=0&fife=s16383", note: "這三間人最少的" },
-      { day: "大阪旅遊🔵", name: "GiGO 大阪道頓堀", lat: 34.6686, lng: 135.5017, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4egg05XyAEzJvOMg5iUkDecgm7IWEwbhte3-WCvoK5Acl1RYH0_uXu27LjEXQG1OrjI10lNJNCVcuMuMO0xv98AB4jUgufmwQYpKBvC6MQzAHlQ7xzJI3A-n2L1sodQBgfUSHUD_6XBqbpUR1e9S0WfKgcL0JlUpdIaAXZp2D60CKBT0JVcK98ZrPl2Iy7AxgAL5uGFRACiCUKIM_VEbLg-fChJARMvHC1H2yhcTQemCPzHRzkzykd9nk?authuser=0&fife=s16383", note: "有廁所的扭蛋店" },
-      { day: "大阪旅遊🔵", name: "Chabacco販賣機 車站", lat: 34.664937, lng: 135.500159, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4w-m4lH7MSmk84hKeNQRW6o30z5g9rpi_uhyADRApgKkU3ifWOLuzZUnyZ51oTqe43F6LjbZfCrihW7s1_5O9l9eNwdZBswGLxxv6yOOLcxXlZCKwXwkVeQ_UtKKEWAHegw2eEcT9TvP-5LZg3h8intc1fHUnn8O88bYuYAZVHrcjN1tNQx2a2APFByiEURd6zveJGEC3SwKW_89NLLX_1y2UGMo6izOeoY6idxZNR4uDA3VJAHoRNkuI?authuser=0&fife=s16383", note: "車站內 像香菸的茶包" },
-      { day: "大阪旅遊🔵", name: "Strawberry Mania", lat: 34.6689, lng: 135.5020, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6RPkcp0a4RFROTt6ueVqrKYgoBUbqtDzLKWQ6MYfpfly3FpfEjAGOqCg0fFHK4pN-u6_9WadYg0nbzdgQETArq2KMLuVwdJa51TwqoKHcxG87w8D4RzvEeiaZisMBsc9xf5ciQmu0J4MA_8Tk72SEzsZEC4ts8rvsztr9M8BHVyRxsdMmmld8poJaSyloNERvRrKNcr7BfUT7Afl40E9-L2NlT0cZckNux6TfkyrR01ARiLo0o3EQovkk?authuser=0&fife=s16383", note: "草莓可麗餅" },
-      { day: "大阪旅遊🔵", name: "博多串燒Bettenyokato", lat: 34.672541, lng: 135.502250, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6AImojTZgojhsh8DKqewPLqKgVL8irrsbM9__lVmpkP5DKjwyxzXCgszhm73SQgN6ZO30w_JMcHWzkglIITJNtQ_wInLvpPqIfrdEsD9gAPTjsI73Bpi_psA3Vg4Z4xqoUu4Qk4zATdwaAGS6lZS_oGkg7dJO0uchJpoG50iuJe90vGJPXlah6xbdQs6VMwzVsqL7_H2G71uNxvAsBP1Zma8BsBogIbU0hziuEp5moK-z9Huizk5Cpe3w?authuser=0&fife=s16383", note: "居酒屋平價串燒" },
-      { day: "大阪旅遊🔵", name: "Chabacco 難波5樓", lat: 34.661861, lng: 135.501917, img: "", note: "百貨5樓" },
-      { day: "大阪旅遊🔵", name: "御津八幡宮", lat: 34.6714, lng: 135.4988, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4odGaNc-xCtA6ENbSkOdbwCfz4BXZq-QX-v2ieN2lFPbJcxvahk_5Ynock4QUI9dSbT3HyKwpW4dQs6fdQGwjVzeuXee0MbSXXmyLORITfEqYJ6cidXT7zR2B6mUAqOIO3PxALmLUtcgs5f9omvXx9LEXqIk4yTroc6z9PTe9jKzis6YO3tFR_DIduiRtR9CbfbJ_r7wQRrqDPSg9MnKfBNhd11QKfyfIHv_cRt5gLLFOoFo6trTCk4ac?authuser=0&fife=s16383", note: "狗狗神社 寵物" },
-      { day: "大阪旅遊🔵", name: "AKICHI", lat: 34.6608, lng: 135.5002, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7QIJktlrISgVvMTzVKXFIcs-17cdd6GR3y-2HcDE-XQsAYTM2CCCPvq4rD5Mq75i1NquE0PZ_1UqHRKbEHTfnuxsJY1mmX8U1fZeKf2C0CVQ73S12OUMeH31-TE8Lrlfr9IxFFWadyMB1L2EncSvVvZdRWX1Et4YYhwO7Y0-Fqadf-YgYW4ZI8XkQ_Sf1IASZYaVxAuutouW55_Df5PpUIiOtyi5_NmK5yXzLoOHN5P97HCSQPKMmTYfQ?authuser=0&fife=s16383", note: "杜拜巧克力Q餅加可麗餅" },
-      { day: "大阪旅遊🔵", name: "麵包小偷快閃", lat: 34.6465, lng: 135.5135, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR72aLKu-pJKhKEuasY1x66LOV3xnrP-ncX1JnX6YeLFNSblbJa769rahBdtaDhVAvxmuQlnKSmuH5P33TnjcluMZZZLHOK4sUmRwoygWzMBpmQlN7YJod18-TT0YDAX1U_lyad5e-AtB8we__w3Mp-D97fjm3MnzO_ZiD409EUpWcyS_zAzwBopx6yMZ9BbaJ6gasNWIaMRkFdAAImjcUzNmxO9-s5uGJZH-Ho6z_v8AQjgtqEjtCviw4A?authuser=0&fife=s16383", note: "阿倍野 Q's Mall 1樓" },
+    // 防盜鏈繞過機制 (處理 Google 圖片與轉址 YouTube 縮圖)
+    function processYoutubeUrl(url) {
+        if (url.includes('youtube.com/embed/')) {
+            let videoId = url.split('embed/')[1].split('?')[0];
+            return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        }
+        return url;
+    }
 
-      // 梅田
-      { day: "梅田", name: "天神橋筋漢堡排", lat: 34.7001, lng: 135.5118, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6lA1Gsyo_-XgHg96xgQnOjVhqdD2VVmvf0M2mCPQMYllpasiz0vCR9KRfbSSjR_-cKgaqDTF9muny2mh5E-iobnzmQnSQk0P1iRJomP6OCUW_aeT1Qm1JaCdpaKQ20HBjz9qWVEneTfBrUuVONuoGVFbPpsK97sEIf_gijp1sR9gNT26ngVZKOf9aKnJZTeYElDZuGQYeFfPY1tBRBr9xKvweXV9nPoxZ3HzcrGbVp856NkkkAKTwUWCY?authuser=0&fife=s16383", note: "(ニクサングルマン)多汁漢堡排超推！" },
-      { day: "梅田", name: "東洋亭 阪急梅田店", lat: 34.7032, lng: 135.4984, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4tZVLvN8KU8Xy1E9x2wQ4MQhqhG7aZ28g_YOYMyZ8tPzFCoqruzSGJwn055coXbVsHCz4VPN5rjpyG-j2DL1CWCq4oKXhifm0Jf8My-P6HuTYj7pKDkMLdRbvAhzsA_8KQrMO-XEhtwwTRBQZMZKCa9OhDHl6yWFKBL4MRYrw3voJbScaDVz17kxOOu84W48NgWVToaL6t-MbZH4t5Le0pFGAVn70nmh8KR5n51cd3OdxR5cMtfqbZCno?authuser=0&fife=s16383", note: "招牌漢堡排必吃" },
-      { day: "梅田", name: "成城石井 阪急三番街店", lat: 34.7058, lng: 135.4981, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR50rNykEG1WZhDRprJUIHDCfs-Z21HiubnbFlBWpDt9KQo0bXW0pXKorPyaGBVULTwO_7xgSkNqomkXxxaWRFbvkFOYXKTqY3DW0sLdLHd1zTobct388gNwt_3FFGsHA7r37AmJq5xuwkFJS8_6UCYRnX8D4yohvd2YldXr3Bg0vde8xw2rCgE5J_aNylBpLbqoibdqQ6FE2Sur9ZOESHVILoOUFQkYEottXyxsUcYlT0w3xZWd4ec85Dc?authuser=0&fife=s16383", note: "找大谷翔平愛吃的優格" },
-      { day: "梅田", name: "KIDDY LAND 大阪梅田", lat: 34.7062, lng: 135.4982, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR42jTLwVgBRsVxOYd8lhbQlRRggFbzMln94_oiaoVb6-mmgDKXAj6H9oHZEHvN4crONaqjabVcz7mMR3daEgPC3z2fcBMogIrsHCoxZltkZDcgFiP_3cu5zkEdsX9zF6u0zGFD1IKsCk6ahoaaUTR5y3uMfRu23o6sNqBvvIWc5q5VUecy5O3PRccTS9fP_5chI3CPSyW9613NEZ_JX2UM_t8kFPpnm63P69yJ1XtdbDkhorj6S2dTNvhs?authuser=0&fife=s16383", note: "買部分蒙奇奇 在北館B1" },
-      { day: "梅田", name: "治一郎 梅田", lat: 34.7041, lng: 135.4947, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR773-d6YcY2HJuoFem6KB7arF-JfumVJGy_8WZLrSrla5J7ypi-0vZX5hiTvBBaJfSitLZVS-EiTnEmi0O82wxMULOdIitKT-n7KdFoFotcxj7Nz2hqifEfGmJ1cuVYEHwjEA0PnYURfvR7OZUMmlyc3ZpBBvKKD3ynx7ELc-9mT7BlNQBAY17_x-6MAKu3bcKsaQ9OREaXZp84yC59oY49l-0ir15iE6rRD0Ix0DoqiB90sj7DWCEFNzY?authuser=0&fife=s16383", note: "布丁" },
-      { day: "梅田", name: "3 coin 梅田", lat: 34.7030, lng: 135.4950, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5FUCODH4DTyzBM797Xxgm6SbXWh_Sn1g39cpmjo6jNoyz85FY-Glwg2i6tVuLFX_wSBnj-VWYZzjFnInAnDrW043Ci_iN5WboNTKbd9qtx9bTNl1eGfzn38JgRw9gcRqM2V9jy6F9V2Qnc4vVq_JfqLoW0mFL9Q8ywDr1E3w5VY-vz0JWO8mCViRZjD4IyOpBIq2dQ4Y4QwzkOVe3-LHfsXs5o9jT26PkF7uAasePJXxqffhRdM9SnrcE?authuser=0&fife=s16383", note: "蛋蛋器" },
-      { day: "梅田", name: "BRAIN SLEEP 梅田店", lat: 34.7013, lng: 135.4975, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4JfFOVh052nfBGzCIspmQ7ArBRzZQmRxIR78yD_XbHrbX5ZUWLzieAkE2QtGcsiuf2T6iOQDeqH5S7gHEyGYPKz-XLUIR7rgatlp_206fBO4-lKxBc6UHDiOSO34oJpXVOZeWCXelryonuobtoAYzIoLW2yyqDPUACoBWHPrSjEkY6HaIJTlfOGIMY_Y0VZmlanKiHpsS4frTnOGa5QKCgplLVo3VziEIdUklWqUVdrU-ioj1Fz_iZ-Ws?authuser=0&fife=s16383", note: "止鼾枕頭" },
-      { day: "梅田", name: "3 coin plus+梅田", lat: 34.7029, lng: 135.4952, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7Cl5bcnaEQu8qybzfy4RPDdolO-Gg_D9NEZxuNV1qmXRJKnA5fJsdPnO_sWm1oJ72E4wJ_cW8HD8KolWsiGq6armN3zJFWxaMB9KtwRqy8Fv3xLisPjIHDhKd9iA8gz5d8sSqBKfCcsKtA54ixgn0ob7DolYB6pmN9ZquuxGhhPAKlZlwswryrr9nSUTG77OmpKIs2gnm2vcX-Im8M8omvQFUaI3Q_CbtzgyZVIeDMVqU1R3yUl6HsagU?authuser=0&fife=s16383", note: "蛋蛋器" },
+    function parseImages(linksStr) {
+        if (!linksStr) return [];
+        return linksStr.split(/\s+/).filter(u => u.trim() !== '').map(u => processYoutubeUrl(u));
+    }
 
-      // 奈良🔴
-      { day: "第四天 奈良🔴", name: "東大寺 南大門", lat: 34.6865, lng: 135.8398, img: "", note: "上次我們逛到這" },
-      { day: "第四天 奈良🔴", name: "日本橋站(K17)", lat: 34.667142, lng: 135.506104, img: "", note: "近鐵往奈良：近鐵奈良線" },
-      { day: "第四天 奈良🔴", name: "天下茶屋站(K20)", lat: 34.637181, lng: 135.496803, img: "", note: "往奈良：堺筋線接日本橋" },
-      { day: "第四天 奈良🔴", name: "近鐵奈良(A28)", lat: 34.684316, lng: 135.827515, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7cLPKaRDvG0JsdT3COkpzSrBoVLkARqiyjCa8J2YwaHuLTUCf7lCk17fFjw58LXufUNkVQC-flcwNCAJYezJ24wJPVADxTixpK6bc1thwD_BbektU8OcvvZJv8x8XU9tbP6yZv8S_GFn40sTwFTiEYjGX0bccXlws3I1JYstnmzOQy6tyNh9qAcjDqqSg2OpJxsvAw9PyBjpPLsQu6P91duivlk7cTcFjJHM5xXoIxTGnGI1jnnjp5Qu4?authuser=0&fife=s16383", note: "近鐵奈良線" },
-      { day: "第四天 奈良🔴", name: "近鐵日本橋站(A02)", lat: 34.666976, lng: 135.506063, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4O8ND-vfpkYErYBV4EyeVsxvNX5u8_N8gDXiuKNs-8HI3icI51H3s5bM89tfiKJMR43WqaSTNJihE6ovkRpDjvZqmppZMwCGerUpkPrecqKSlcW1EjotCaaKL_7E3HLCgA1oqfD0ZchoyNvsTSKaOLgfKpFA9W0Pi_HPxdHfDNMk4pMUpkzDl6xaRJ-k9JSMp2TUJD-iAiknHzYOsiWzzy5RBLOagO5TQTfzwo-7l88-758_L1z88MUA4?authuser=0&fife=s16383", note: "近鐵奈良線" },
-      { day: "第四天 奈良🔴", name: "奈良(Q36)", lat: 34.680794, lng: 135.818937, img: "", note: "JR線" },
-      { day: "第四天 奈良🔴", name: "空庭溫泉", lat: 34.6698, lng: 135.4623, img: "", note: "空庭溫泉" },
-      { day: "第四天 奈良🔴", name: "奈良國立博物館", lat: 34.683159, lng: 135.838308, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6BB7qqgxbfwdt01uJXvyR_J6wmyIg7i4Xit0b8GoZ86MEa8O97oF5AfaawXSnCKfiK6eI0AZi0h-SsHWWwJWqe_7DJAS2c_LooOLiKGwV7q5DJ0oB1L4VGT_w_eRfg59dNM26GKtnu0AuyjEDPBIUYbfMsg47s1yN73U_LQBch6ZRJ_JVdmClP8cYLrT9BmOiyNqGDGkXS4QLlH1nX9x1dk3MZmeFxRsYrFxbflCXo9ImET20gKpg7Y1s?authuser=0&fife=s16383", note: "上次在這吃餃子 躲雨" },
-      { day: "第四天 奈良🔴", name: "往奈良 轉乘點", lat: 34.637193, lng: 135.496707, img: "", note: "票價240￥ 6分" },
-      { day: "第四天 奈良🔴", name: "往返奈良 車站", lat: 34.685109, lng: 135.804801, img: "", note: "票價590￥ 27分" },
-      { day: "第四天 奈良🔴", name: "弁天町(O15)", lat: 34.670152, lng: 135.461982, img: "", note: "JR環狀線" },
-      { day: "第四天 奈良🔴", name: "奈良到弁天町", lat: 34.670453, lng: 135.459878, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6JaZ9Kt4aSjVm2KTa2iZiZJnqzGGAdP3pUaKsIv62LLdHHxluwbh_Joeov7LMhDq9QQYwvVcvnPtO9fcDVPTFyX5WS94Mg9M-5ydHl6THrgogC2aMakE9d9ki-RozO_P9cu0oA36BiiR3-jHcDikj610ClocdDm58imbgTXVuCGAUBTuUulx_nb8IogdFQESENaHHQ5L79Sc6TyQJIQv6DclCmbnyBdvOClV2x5LID--7zgtCkOG2107Y?authuser=0&fife=s16383", note: "票價750￥ 54分" },
-      { day: "第四天 奈良🔴", name: "奈良市", lat: 34.692436, lng: 135.604989, img: "", note: "奈良" },
-
-      // 環球影城🟣
-      { day: "第三天 環球影城🟣", name: "環球", lat: 34.649266, lng: 135.452421, img: "", note: "環球區域" },
-      { day: "第三天 環球影城🟣", name: "第三天 環球影城", lat: 34.6654, lng: 135.4323, img: "", note: "第三天環球 小小兵 哈利波特" },
-      { day: "第三天 環球影城🟣", name: "往大阪環球影城 計程車", lat: 34.640116, lng: 135.498109, img: "", note: "票價5500-6000￥ 24分" },
-
-      // 京都🟡
-      { day: "第二天 京都🟡", name: "唐吉訶德 京都店", lat: 34.9875, lng: 135.7594, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR44FYve52hsIcpmo-wQj4bG5VSZzzuKDOSel0o7wPrGEuDH17H_1RllcuYDCNxCw9vtaGc_cQWZXeni59fcug8RCWz1rD_8X96Hjv5oqWWecV8xp2nuzovmnyHEWRvaOAhJzPgMXemnGKFMWPVb9v6KZRybYhdhSJmvyPIr5A0Q6NjU2YHoqKAgeMI0K3FIHX917YhNQXWaqXLLu3J5eoFWdkomS3YfCsQMOfIfsxy99vOlM-_OQiaedSY?authuser=0&fife=s16383", note: "超多HOLLO KITTY 刮痧梳子" },
-      { day: "第二天 京都🟡", name: "錦市場 京都", lat: 35.0049, lng: 135.7645, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6v2Ztsqloibj5Z9Fd5bXdHszNl3CDAETEDQ4keS6qzdc0FH7UWJdvaw_Bi_HnlmNGDO8QKUbNCDUvOk3tF_B2ANDyXYMfNFAbQWg5WhnI4s3kNNQG0JU6IuW_sf1L6CyGLn-RzMUeYrG97xS8kyFaFHj6sDYQKmbQ16payw4r8X5Hhj8vKujotfIs6DcZkEoM-uouM0doiIiJTKoQLGpc-Th4S1xgDmd46FfrqCmjBliAyUmJqAiXLP7E?authuser=0&fife=s16383", note: "在地人逛的海鮮市場" },
-      { day: "第二天 京都🟡", name: "大創 四條原店", lat: 35.0036, lng: 135.7648, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5qyulcG4r-D3Q4dCcbjdnkiba4UkulkP6a4z0hWwR8csge4jn933D47pbqLlxTj6Ub9zUMljXtGMh-U16yqxDO7AwFqnZLRaXIuFFlCExVidlt8JyjxI2OGtYwOL5OZOIHcjX9iswBeNE28ySQGCYghHOYTkpDboh7yf0MHElHpJ6Xb03s6DOyBK7GFGEky0KJIFQLS6iN5pGgidgDNu1c-wmQtyvNQn6fLkwhCepDuHBKfpsATNCf0jY?authuser=0&fife=s16383", note: "2樓大創" },
-      { day: "第二天 京都🟡", name: "大創 京都店 B1", lat: 35.0042, lng: 135.7675, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5iobs2otrD8HmRiZKa1wwO7UsCvT4n44XTe0_ERwYzKYv0Nhg637Pv8eHfx7FyuMwAwso4ngod3DYL8nFxcU8iev-z6wGEhuflo6xXyrF4SnubrZHjnIYArzcux4fRbzKUchD6zf8dg94X8-n3ODKOEUx_v4RCRFy9Z1N6KpnuAz_7kb0uM1y8s51Y6DJ1k5t6ThgokClSodpZA45I3f0nkKGMtHqkEeDCUzPLr8j-oNYvnV1Lxk58nOA?authuser=0&fife=s16383", note: "B1 大創" },
-      { day: "第二天 京都🟡", name: "蒙奇奇專專賣店", lat: 34.9961, lng: 135.7801, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6vApa6-cKSONquYnQM0HejwrfmfMpI5bKxzKfukGo-mNTfBLQSNRn0PRWJHB04G_SAQ18vptP7byHm_zazsjKp-LRmx3gyuFIpwdhd-rQkrwKph-WFI1q15vDFEPu7hu7pz_iYEPEwjeQRF_WGYqrrTs7RFyXQyA1pqxqzrpP2KWhaKlHnSMrNjQd8dKxdsbpVPqKP6wxBBtGKAkHXZ92uWBRQnTPXLfCtmZrB315dkBW22WpCVDi2XqU?authuser=0&fife=s16383", note: "京都清水寺附近" },
-      { day: "第二天 京都🟡", name: "第二天 夢京都", lat: 35.0003, lng: 135.7797, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6y-xf3TvDWGQD0sTRtleEUqFuMdTpolTD1SZzsTgoSiYiWVMMx9X403CSi2N4w-3bjh2ybPEb9Pfi1CyYwAr9yFwcKC-CG8wV3RlWlWSA3J10RRDFuapeCr-AsHIPtY69fTwlZu0IDU2OW1Xw5SyhOTxLqe9bQFmikMrbLNdsNzUkkSlaLVrLKZ-6HMeQ4VmXt7Wcbsrsym8Lz13DZ_jQOWOX2gcg_tJKg-QTXKElUiauiLH7vemWu1aA?authuser=0&fife=s16383", note: "穿和服 預約10:30" },
-      { day: "第二天 京都🟡", name: "京都河原町(HK86)", lat: 35.003775, lng: 135.768765, img: "", note: "京都河原町站" },
-      { day: "第二天 京都🟡", name: "淡路(HK63)", lat: 34.739413, lng: 135.516818, img: "", note: "阪急京都線" },
-      { day: "第二天 京都🟡", name: "阪急京都 淡路", lat: 34.739314, lng: 135.516932, img: "", note: "直達 京都河原町(HK86) 票價700￥" },
-      { day: "第二天 京都🟡", name: "御金神社", lat: 35.0118, lng: 135.7554, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7QswHstIcYNmAk0z8JCcO-hLpJQPIW220I6Ikt0Wb3Lp_k4HiexewE9q_-WLgSHLj2lrGqm-SiIGLxjWICaGq3DsiYjmUOKnI6b5U3YS-BKwZLYeuy1HRfcsBuSFhoz3DH0L3vIxI0XtPRBAUWRUK08bNG6jimJoS4H0-gq6UkoU4HmBJPgCsJnI0e_T09CJdj-WYWVQ-hqqLBn0Gg_ftht2irbEQhfet-Psd5igPOI8zZbBfUupUM3Cw?authuser=0&fife=s16383", note: "金光閃閃洗錢神社" },
-      { day: "第二天 京都🟡", name: "檀王法林寺", lat: 35.0094, lng: 135.7725, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4B4jbzl94eDU99OrP7wfKLMTXb6QO6acGFeeVHC88R9d_bi6_dF8OOQ4aC1rB81jQks1-RyigU8XVCg2CsnN1iOjkvNdgPhiGMUWiBBXf0WFuZgftaG7Kxdevg-twKY4JtR9pT4a-B3V4gRJS4PjqFp6y_TqgssiamI81La6gzEG73Q2ijxz4ue_qGQIIrRMRe1ybrjevLchWgxbhAydjgDUJl0pH02ArAYLSsIPhc-1bf1fsv7DZDkzk?authuser=0&fife=s16383", note: "黑色招財貓神社" },
-      { day: "第二天 京都🟡", name: "京都", lat: 34.827965, lng: 135.536182, img: "", note: "京都路線" },
-      { day: "第二天 京都🟡", name: "回家點這", lat: 35.000553, lng: 135.761391, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4A-G4kA9rXG8N_9k1Lfr1RbW-31wFr7ugyqKX1zjgJNB-vNuY-ICCLf1Cum2JrbteLabUJxZ7jvN9t7i9dACjyra8Kz2zqIiP2LnYA86nEdYHyWixBAK_i8ErbDiYLg-monUxkmfu4aDY-GU5gKETbOqe46P3THyDHAwz975nbr26c-B2CF8aDvDJMc-Tdz5ECHZQdTsvvLipMJjpFG_cwThD2-rWG0X9TU6tPGEveqOMRDg-BepE1oek?authuser=0&fife=s16383", note: "回家點這 準特急" },
-      { day: "第二天 京都🟡", name: "BEAMS JAPAN 京都", lat: 35.0083, lng: 135.7597, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5up2UNHsNO3n3zu9CVEXCOpxGlUy_NPbgUzti2ZxoLXfMq9cYbQTCWp2gFhbfAi-ifpG5Cy_7FYw6_WN02wcw35-wgeySMkzMz4w2H7OsisrQGzezbM5Y0UQ_LYFFg2KbGCKCb5uNuCbRD2t5T9J6vL0brM2mAuUF6Y4dpmisEFrSnRqLiCtSPWX3gQGu4m6QAQFt0h_YJImg5eyFS0SWiTEyHKy_khNJtviAnuV3ZgmwyqPMNf7QKeo0?authuser=0&fife=s16383", note: "京都限定招財貓" },
-
-      // 神戶🟢
-      { day: "第一天 神戶🟢", name: "神戶臨海樂園", lat: 34.6795, lng: 135.1824, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7A66cFFxHiuJQi55OachW5B1d0Lr2W0l_fh9ttY7I1eVMs5RB7G7S2sxq5RMRIThuTd7N1Ka52qbnh6Ot1teieiU-Sfo13tr6QG2w1eQ8mw-YolVI62lLU5KBuCGfghYtvNyUEuhrLqQ7AcdnlPPAfpWRYsI02nwgB5bvATOI8sckeYt92D4x1tYx9QS1NWeuAZNOleEwlt-_TBHm1mT1kGUn2GSt6ZQtFllEugRv5jh0cgmXy3aYjSb4?authuser=0&fife=s16383", note: "大型購物商場 可看夜景" },
-      { day: "第一天 神戶🟢", name: "異人館", lat: 34.7011, lng: 135.1897, img: "", note: "萊茵之館免費開放" },
-      { day: "第一天 神戶🟢", name: "天滿神社", lat: 34.7014, lng: 135.1887, img: "", note: "扇子神社" },
-      { day: "第一天 神戶🟢", name: "神戶機場 (P09)", lat: 34.637245, lng: 135.228914, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4aaueCuEOXlTTp3jgyGu2z5H0LoJuVP3nQFZFSIuKneZRsVGWddeND5E6x5L3lQcMnjQs3sHcGddXEA-0s0eVU9c7HboGhNh-sbE-oqDvhS7jiftKhRyYpUZw4_iDslHiIybymIu-v2gfF3cRdQv5lFIPuiTDdYX0Z96R_htN6x31ICoTYiaHMANZugzfhG3LHYY3ztR3nNKNZAwyv8jEFdrTs1TvX-meDMQwWOmJshB4q3KjYlJXJj18?authuser=0&fife=s16383", note: "前往第一航廈找Port Liner" },
-      { day: "第一天 神戶🟢", name: "三宮車站 (P01)", lat: 34.694551, lng: 135.195252, img: "", note: "神戶機場搭到這" },
-      { day: "第一天 神戶🟢", name: "神戶三宮(HS32)", lat: 34.693848, lng: 135.196033, img: "https://img.youtube.com/vi/oxSdqRVScw4/hqdefault.jpg", note: "阪神特急線" },
-      { day: "第一天 神戶🟢", name: "Port Liner", lat: 34.637245, lng: 135.228914, img: "", note: "票價330￥ 18分" },
-      { day: "第一天 神戶🟢", name: "往日本橋", lat: 34.693800, lng: 135.196057, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5gpYSUvbNbl64QoGlZQqowOUR3HMsPiZexoffPBbbHkIvJT9LhpI1pAj2AuCMzU34LPblNke4Int4gC23M4pIaULwVdQWWshl9us3xCTGjNi4l1UbQwGE8fC59qbJfLIepgE0uJUplQObMxlq4Hrln0LI4R5rao6tyMn6FFZhDZTTVbrsAQ0mpORUsTbehVuePMnT2qWH5c8c1iDaHRxTngGvZYZWMVTbyIsIxFRfg7eKe_SLFJM42Qt8?authuser=0&fife=s16383", note: "阪神難波線 票價840¥" },
-      { day: "第一天 神戶🟢", name: "神戶", lat: 34.758607, lng: 135.313709, img: "", note: "神戶路線" },
-      { day: "第一天 神戶🟢", name: "BEAMS JAPAN 神戶", lat: 34.6826, lng: 135.1867, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5e48u8aBtAxXOtPCrkVwxG-u-UbewiaX9w-GM-jKUprEoCJjtSeKmyMf33NA-sBNpEAbs-maQpON1XXyob1ef-qhK6ip5fuDWEqP58rIM5B2o5MS7fXBwswPHfzEaBFLrFLNxmowGe8ki-jfn2bcR8imm8Mt77Wy0H6-dHlogRTDIKd-rlP8fDSADwR2DKiUVq3x62pVjejP8wOeRag4qD3FEnpgf1Cst2uqbhC5xM25R6rDvl7VY8YNE?authuser=0&fife=s16383", note: "神戶港塔2F 神戶限定招財貓" },
-      { day: "第一天 神戶🟢", name: "南京町 中華街", lat: 34.6881, lng: 135.1880, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5un_u_1se6_8iINQ1ViaxgC9ZGtyr6R2RMYlGdH3UJlEqfxNHMBfV1Rle6M3SqN49SzKegqQJwEuYPB7z2BwVYCT56o37o3JegYvR2NWpzJUbMZI9iGrfgOCQED8t3L_y8L_EWRGQvDxTt_eKf1YmYRCJWBC7G0uB2usPXKobq8k5suvjqWnzD_MRoRfo2jMOLISApKMlj3uHtTYr_QG3h7AsZ_zFGXbA2kWmMGK2dxb-1S4ndi6--m0w?authuser=0&fife=s16383", note: "商店街" }
-    ];
-
-    let places = JSON.parse(localStorage.getItem('szuling_places_final')) || defaultPlaces;
-    
-    // 資料結構升級：確保每個景點都有多圖陣列 (imgs) 與 排除狀態 (excluded)
-    places.forEach(p => {
-        if (!p.imgs) p.imgs = p.img ? [p.img] : [];
-        if (p.customImg && !p.customImgs) p.customImgs = [p.customImg];
-        if (typeof p.excluded === 'undefined') p.excluded = false;
-    });
-
-    function syncToLocal() { localStorage.setItem('szuling_places_final', JSON.stringify(places)); }
-
+    // ★ 關鍵防盜鏈核心魔法函數 ★
     function getProxiedImageUrl(url) {
         if (!url) return "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
         if (url.includes('youtube.com') || url.includes('data:image')) return url;
         return "https://wsrv.nl/?url=" + encodeURIComponent(url);
     }
 
+    // 精確還原 KML 座標與資料
+    const rawData = [
+      // 🔵 大阪
+      { day: "大阪旅遊🔵", name: "HOKA 心齋橋旗艦店", lat: 34.6766, lng: 135.5015, address: "大阪府大阪市中央区南船場3-5-11", note: "(HOKA)買鞋子 日本最大旗艦店", price: "", routeLink: "", imgs: parseImages("https://www.youtube.com/embed/_CTSpkCAW48") },
+      { day: "大阪旅遊🔵", name: "Seria 長堀店(心齋橋)", lat: 34.6748, lng: 135.4998, address: "大阪府大阪市中央区南船場4丁目長堀地下街7号", note: "(Seria)類似大創的百元平價超市便宜好買。", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5OaI4xRgbRvtBVOWVEmrUVBHnc-QNgCpoHcMsqnTYtzPcdbO5ztq4O80nZAgy5SUBk9C4K8-iuI802gOjpNL3SFMNH8qVcRLM2meIZG1SdofqiA9oiAQum7cY5vgKhZxyUnblMBWtXDWKegHqIuy6ykCwdiEGWNqbRay1j1DWtwOvgmsUzI-YC-7ZsxIWJFPsJ82-QwnbrcxfxwV6kgO1anJGkIjPs6bcK_dMmEiMbORlOXI2tB-lPBzU?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "Seria なんばCITY店(難波)", lat: 34.6626341, lng: 135.5028243, address: "大阪府大阪市中央区難波5-1-60 なんばCITY南館2F", note: "(Seria)類似大創的百元平價超市便宜好買。", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6PddQlo0EHygqR3Z6b7ZJlNBMIeiAqCPm-EvHpAZMbFxLYJe6kxBkwzlWXQor1gYFQqeJGF6NclIQRJdtDfvsGmtAZc8SDa2bG9sSJvbSoepqCaU6yptqDo5TXjQ8JQ8bRnAJCIoq2jfapt8GNUmqFKV318Jj3snLfC59hpMEEW_qSSi3UuTUZIyRDQtLk2RKO0vxuG4k0i4YGL2SYZr8Ntl2NdwInMMFBbtPxWMsFMoFKDdNLpW1w5RI?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "東洋亭 難波店", lat: 34.6644, lng: 135.5013, address: "大阪府大阪市中央区難波5-1-18 髙島屋大阪店7F", note: "(東洋亭)難波高島屋內 招牌漢堡排必吃。", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7POs9LyxHGqmMdt8bYKLtGvk2ZYp3D84yUWNQKYly_S2vwl5nP-O2PgeCdY10QxXTGBS9HS1syT4xbH64h1fW9-u8bW4KxOuW_8DDvZafobxR7SgNT7EDuustrL7hxDZURj6VPTA_7jkXq8paFngsLk1TXQnWlOdPfMy-ORGBRbDGeydXiSQLtvlWdXvFrFiGW2SojfBVLMJY16dD8Dy6oqkspnFtucIqMOymYdD9m5tSNC3WI0epg4ZA?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "UNIQLO 心齋橋旗艦店", lat: 34.6738, lng: 135.5011, address: "大阪府大阪市中央区心斎橋筋1-2-17", note: "(UNIQLO心齋橋) 有UTme!服務可自製圖案衣服。", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7RlbJH-p1hDU2H_GRAKVbv-Ye_DwOtvQ_u3NF1_3zW6FGru8ybr4-n_ZrSr8Ss2_M9s17c2dwjC1c_CYR58AJRV5-UoNMNeMk9Az3DUnegYtBFFGDappcs9aSzsZ25TWdRo6Gyj3aUbxkzXfVThdztnhJpu9mkyRwKRSQS2ONG6wYBGVlKQn-h3Ypa8tq7ulqZdOG8y7D38HFnvFpDdod3xEH5Giq5kh_b2d15yVIK9H0hEmZg678-yU4?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4i11uRGIIp2vHpBhnNKaAssRRqRPR7D34qjQodd8JP_Tphdx6h78A6bNLY658S2nFDYZlKuMqq_qSHUC9TWI4YejG2X5qlJ65IsKsuP_GJ8n9QDB3NmkNTEvJv24Ux6RejpgOIfA0W21-MF0U8p2Xcu9i-luQP1M2yj-SAt3zUHbqjXIPE-4Zrz2b4n7Bt5jOpGk8-1pzSue_BS6SVjeIYJaD_PN1NPJ5m_EvQqCm8rmdV2O7gDui6ER4?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "#C-pla 梅田茶屋町店", lat: 34.7078, lng: 135.4996, address: "大阪府大阪市北区茶屋町2-19 JPR茶屋町ビル", note: "(c-pla)超多扭蛋機的大型專賣店。", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6oCXUTb1UwyJ58d5rt-A_PvFAwBV4f3mfVPXOkso_dX-MKmW8eACHz8khqEB9tffWocMNxeevksJyL7QLtFGAOG3p5vIYvlj4AQP5pCiIB4OIaklBNnOqpCOKEryJqD1kO4gNjy8sVyTGyH4ooGrCsSScbXMxFFy5DCFp0tVPYBjyJ8K6ysy-Xx1Q9h8499e9sK9_nmGWlrOkukPWsgwvLcYYPk1aaAXluzxJBwYztTus0GZ8awwBhunc?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "成城石井 なんばCITY店", lat: 34.6627563, lng: 135.5020431, address: "大阪府大阪市中央区難波5-1-60 なんばCITY本館B2F", note: "(成城石井) B2F找大谷翔平愛吃的優格。", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7ua09hLk2nTNFwQbbR2Nk_caZut6ou2o9CE1hR5FZirh2LgNUUK6ngTskgkJff3Id7GGG3sNOCkDZAf4mdCED-3jw48EJzTKriKSyk1jOJfBQvQltwfeZzE3TgkyuhbzOGOzLiL78lc-5i02Ofw9t88GvnPUx-mhWGnOWXjF9K2vfWpUJHlTo4tdCCl8_F_Mh1XoTMbwMAFwaJ6-228_yjjFgmm5FqJTuDOKr22rM9w6-fUXTypoYRizI?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7y_2MChWRkrYION8D6CTqwP5bN4pXPuYILgGMZrEjWvwVwzGs6UMxmHMljMN5a04eV3qvtCIMHbNZFr-Ca-55Cq7S4XaIeLkv6WBGw4laG3lwWlXJa2UtJF8EW4h_oq_AGKbggRWs1tF5Fw6UP9DEQ6bNtBBihY3BidKeCbIDOYknytpUqG9bXTW3S3XIxR2R0jbRoiCMO5KzJXiUdolQSk3eTAxxtCRrp8FYs2yYEIplg1gh6Yyydmi0?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "Cafe+82 大阪店(心齋橋)", lat: 34.6769, lng: 135.4952, address: "大阪府大阪市西区新町1-7-17", note: "(Cafe+82)有卡皮巴拉(水豚)甜點。", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5mkoKz1Jca-niEGe4GP3g5PslZqUfMyhMkUXRCBz1uBr6bdNKDLxp_HIo9tjOAmwCvO6TGpN9CGgBJ2rq8nIN_J_MzV-R6ttQ4dPLi59RX_0FPB8Oth8BxT-jub1yt4mO2tYExeUh0CsXZDf44_7YmaVVMJBCUipwpHZPcjfvpN-VUI8TP74Q2TAkh9QPXzA3GqSyNioT2ZlE6FowEXhVFxAsQ_OCzP2bPuaOoECvRTD-5-gPfSpK3Sew?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "Bic camera 難波店", lat: 34.6666731, lng: 135.5025684, address: "大阪府大阪市中央区千日前2-10-1", note: "(Bic creame) hello kitty娃娃環保袋、刮痧梳子", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5mxDlBQphepBNgWJjbd7kg19cDQfL9FI5KP2LfLwWc3__gq6265P44iRJLypYYLLD8pXl4cSTKae_POPu-fgBbiWEY3F5c0Uz2PtERq0yzYoDXQWokEgoVF0GB3Ufp8J4esWgkMjXtIWQwA8fPxLvI6MqykpxexxAJRZ7o73-c8fceiaytjUg1qb2xg7Hvkv1ezgmQ4ihBV9ABZaKF1POvnG1sxZGfAumY77VpS70qHovHnmRbssyZIFg?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7jrRdBq0nOW-JvmEaw-4i6gG2Dq4yrkyEFbFtYDwdgK6d5y32E8xSGuApnPWpOOixt5dGpPosaRqCH17LMxowfDSu-DxcHCms0kIaaerBJxfOKLp2Xg0SMuFaHgPO9wOGD0qIyIdzfvPl4gawkQTOg5bX3RCnjY6LIdwxDtJWAR5WS69ad8YLUR6CfBjNH7Zb2x173rKTlqsFovPM5GH-nnEClkS6wxOQvY7qns5eu8XZ5XFBJGkOeic0?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7fcOvKGTPoTjicnLI92kcKXX1WxIVtTzirgWtr8sn86dFa-6QQ8z2Fq-qUo15DUxgZb4Er76TLzsisu1FRueQITn7Rj7QAlCDwNcMSW26FYnMlD9l_iPtteu4D_sBytpHqnyfefqw7wMDquqhFnWV7v5KY2X6_yMjdQs5_CrAlg5CgOvhfTf6YqWbI1P0KkKrsZgyP1du9M5GjmvrMXX066kMx1WuUSLDpznPqWBop_KSbpGVzDYk_iIQ?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6A4n7P_xo2ZPitVjVmHcMGzq5YwUZoeXWd3GsnfZWjCafk2sIUBb62Bv7Q5YBDfb_qYa2YLdRGz1oI2WfXkPIXNj-QvzCy65eIpesDPbAL0Gd3aSsGKkqRKCgeBLYu0DwOLX1Vme6RA_KPmV1TemzgAypXFLzZKnTV69NA379J-IStE70J6cr2afsQug4818fhYQKMCSj-cPTZr-Fyd6Rtc27TAhF2MXWd1NpBdHw0T_M3tOabhKClnuc?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "難波 Loft (なんばロフト)", lat: 34.6612, lng: 135.5016, address: "大阪府大阪市浪速区難波中2-10-70 なんばパークス5階", note: "(Loft)5樓 調味料、刮痧梳子", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6aRWChOlz9CGuf2VHs6_NWLS8YyWE9zUB5YpLKUpQvCJJGsT4nkLMD_3dGUEJtPU6u4PHsTgm1JEeYWsu2mpqZj4iX9TSxRrIiZi31RuIfYu1BF_C0ebxqTUJIVdl5hlC9LaK4C5cJg70M2n2RYL_OMKG6hmU1pnwCEtW82jrgKcBHuNPoPGwATmJ6dQmL7NmctcuLCh5zvxQo2DTS6d5gC2aKkEJaQz5QKIqH9nK2is-yBXbDMhaBWuI?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4XKnArQ91gi_cjiPHgI_oP-vKWeQI5JrFAdaCpVGQ-uFQQfWlvnQLTAa5jTAfGXl62YDhN9o4T7xBBy2qyuEwd9JQPsfjjNlo_RVUriK6mEdX4SPbtNYTH77fckBUlM34Qc4Fjc1cVBXicudkrr9N9neCN919OdlI3lufCsCedq0j2Lftt5c9F-hkGn01F2mMo-n-hgVTAroRlTlFRcny8QgVJBXQwCizrO921Lz0mk8JGTmlKqgQ8cj0?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR44Rs-wZzcGd7hWMwuAN8GL3LUK5detErrdUDVsanxPWqPAAHFWjYQfKgsbUhcyiQoQWBHz1OafkhhfvWsUS9u2dKCBicBy3i7XJeniEVIKYVMM2EvlbgnRN7FAfK70fA1XMkCPkZsbr9MitML1uthI_uaPbgGhrzv5njcKo2y8e8pKcRWeNj97l_QJgntkS1tistL_SWxOgXqHho0G-fn0hTLGycBlEDSzoWfXBSJaFht9QOCSsknMZEw?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5dKykEJkinCmLq_nQOpSYAWEKMfYUG5qBAt3173EvwBGvSjQkygz6Wv9MrUWlaj3-Nm7a7oOaR36xoG6SxR-l2aEndjDBTUaQNp5qlVy7p6wzOAGJT5XxCZb6ko_aA6WWrW1tiGdTIzv22WG7-XmjbbQp_SyN7B4BXYPlcR5WuRfuUnZSLfS-E5teou4ca_bpukRbJf2ttg41xfzynPSllLeb21MslF77WOHEWj9nd3yhMiareklXntYE?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "木津市場", lat: 34.6562, lng: 135.4975, address: "大阪府大阪市浪速区敷津東2-2-8", note: "(木津市場)酥湖啦 海鮮。", price: "", routeLink: "", imgs: parseImages("https://www.youtube.com/embed/PUAYSt6NB24") },
+      { day: "大阪旅遊🔵", name: "3 coin plus+難波", lat: 34.6627739, lng: 135.5025151, address: "5 Chome-1-60 Namba, Chuo Ward, Osaka, 542-0076日本", note: "(3 coin) 蛋蛋器", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7wM3jEL5Zv_uF4Mz42yXBmEY94poTp6dfSyRsCd7FcX0DVCvSQE7EqrlT9PWHQyXtaCu9a2WbUgy9FUj-JDHqQbVV6uKqrvDbd92gowXchgstLAKZaULzqzFNHzKAT9iAOGMPHGBO9-Tz_tQimWQTPLOQG-jqhepPNRto1L8hoogEVsIXdrzdKqdgA05TvrJnjtHGKj-oD8aJvThd3aLfigLIw4W3OZVGnz93tBU4VYgP7PH3D9nt_OBI?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR40gZPuR2b1T1yK0-72fsNlWI_94vHY9lJWu7WB99rAWt8Tx7E7Z9cjex8_7iwwSFLsnWeD3LMr5Cd5EbOPISddPfrw6k6Z3Ci-xPDWdjgfUSD6i-ScxPiZ3Bt9wuYxx5Z5I8aVQBkB3-MBLSEzCNOLpRDjLgUrYa5LIBzhC2D9apqBJY_vAGIZZfJKG2JQwNu00qNmJBMQ5y-Zn0PFbCOmoOe7FvUSmhVL5WQA18aRzrN3IWQeex9D5jU?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6RwDd6zOQhOUcxnAAiAf9op0Aa9Oja6rigZ9lvr2RoiUGpOSzOKMrKwBUF2hLDCGOSh18kSFLnEStBJ7OUp6R54aFgP4AzL4uGOlnT1r7GY4r79yyMBiQWX8DFeUNSVB1T-6UFAesNl-UOEqM1plZx_DkoqH2U9I-mgpS0oN9YU4__8TfuFydZW7YdwMwYrm_2HsDngrN9CLTV3KG7hVTwo-keuLzLv0ubiRCDHS0c-JRujjRdlweHd2U?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4JSnUL6r-fWySeG08iGIonNPAf0qnwIkqK7eNySYpw8iWxlk5iwF3zBuxghel8hDOr-SaDfaQLxzDqRgFw1Irjp8YtxX2kDJaDE5lwHkz17NnggHn6y0vnKtkdH4VCH1BHtfHGSqopJ6hWfRDgWOCShauSMJYa4OnfMYLufYjZmFB-SUG_PIAhMUXcgPYBPG0PrGy2MFJAMYjTl8Snyso1Oyg0Db3rOKCNblZdWjCSKc1VJQRfUaoNIAQ?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6JS3IzNQI7vEBLnypvr3Js1DjPTDsa-Ev_DHj04X7i0PzTO3eNXfebZiij-kQFoyGXTCfZRB8GxOl4x3fWmkUdBoDmWHwex7OwDD4cQblV85OWJ81sYdqCH09o0zyeN8OWBxHbPAbCTArJM6_m6bkCkgRs64hX8GGrxHvTl8uohx2DTELMk9p8LV5ig-xCX0mHwwf2f6m8X7-etOgYTgfC-oC9d4WhjWvO9cyJmXgJvAUmqbQPKbGFX2I?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4UME0D_5TJlaQWu5lBqUQf2dF6FfbhEmIaqWHyvZ9s0XWXgaWh1EpX6Lu3P9ZvVTR-Ep13SUQLSv9yQz2Da-aPJLyfKM8i6ujkSn2ZFE3SoTP9duTOnGgShLyf3v_z5SJQncx0FwJXq4IAXZHohwGz73-yB4ybLWTEGhcjmvqVt9eZ1j5M97DM24mjMYbthVIex8rG8x6oiPvabP3pLdfBk72QHnHagF2ZAq2s7BX49Naw38D-rKzVQ28?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7zvQF-Yjw9M-uo99meUn1B6AgnD9nYF5pn5rOu_Mb_IJclmDg-jUgCklHp3ys_ZnFPrMNNRjakHVWQTR0uVi8wkjY1Hcm2zLK5R3FCuHO-0ILjJtzHl_FpRC1UrDB98XnsseMMQfjIXa2GcpBILiS7wRkQnKFHEwDht-E6bfpsPMYFeRXLargjLcgBqHq4F_hV_k04HdxYhnHo-AOlLkAtq_uw6ViM7E7JZqR0NtF4Hl8a7E0qxczrtqQ?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4sxJnYBHLCaJIrXj3UiQZ0wHtAcLAJ2p4LXLEHPo1LQah_2WghIyj-edPN06utaDpSqiT4dhSEFevsE0StlPYghtpszGjlt1t9FjqVYK0KJtfppuMnajUDykMcLcWdSpqJFwi6WgzgEdENzyN2Be8oNt-xifSkGzJIuGZQh8xLI0MQ_WfHa_Ud1_CgcfuuHRjOr0GhXk-ffJjhZbyvWsBBuj75fgDtfLYK1PZ_sILijwFvQDsxIsKmLBU?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "WORKMAN Girl Namba CITY Store", lat: 34.662334, lng: 135.5028994, address: "日本〒542-0076 Osaka, Chuo Ward, Namba, 5 Chome−1−60 なんばCITY南館 2階", note: "(WORKMAN)南館2樓 防曬衣 有2間不知道哪間", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR69dN6OKBjSglWTlnj87Yi_9lVwKEZhKicxCd0uORtKixJ-aTfS06f4n40beuIsx1vW6XRPeipwKDxaNIOeWmPL6WscQBsk_pylLWK2c9xeqwxBiQNQ5-ILhbCwZasgN1MzTMijHflblDJVBMWwxFf8ZgCXGmMY4xV0FBnrrtXuZU06RND2lOthzmOlp8Oskeh-x3pBHmqlJFiLO4xyyX_ulwJORpTDoHZXzD8eQIcSOHEs1BDjdSheonw?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR40uVKt9Z4byeMJaH0rp53fJLRBbrjUSBEHO0DYBj1g3ZK4dZ1wkPOb4KEaeWCFgsfxzCChg7dmATd9F7K_R7fOkQGXzye_zwfCm2G9Tw9HjArGKXockuisGTFC05eL-MvjHxtbxkXFl93S7luJSRexFzY6M4y14wngR0QeqyyTTd_TEh7vsiKSyN2ewGiNoJk6G8XLkFPISrTFnQajhxOokN8JymZ5f2UJM26ZLF9bX0sEmB9SVrKiwwM?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "TsuruINN民宿", lat: 34.6366, lng: 135.4962, address: "1-chōme-25-17 Tengachaya, Nishinari Ward, Osaka, 557-0014日本", note: "(TsuruINN民宿)6天5夜住宿民宿", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4RXT4ic99WPtHRDWPNJQFbGOvUAYQyPnshsqblr42FEIadU9tlvMUuPTCysTcFMosY9MuzxNeH8OZdLKgzh4jC2yZ8-yd_OAebG_0lbUj4Bho6egdauKfdBbhkcJoqzasGyZfWAs693GOhCTZWvyCgGvZjgt3WH1ynj_ygjlDyc7ialZe2fo21APfc0LXHjH716jafnq961ILv16aYHOVvN62xzUbsEGcbvMIb9xSuUUQ1Mr6nbO9HIT8?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "客美多 道頓堀店", lat: 34.6687, lng: 135.5015, address: "日本〒542-0071 Osaka, Chuo Ward, Dotonbori, 1 Chome−9−1 2F", note: "(客美多)2樓 NO.1 炸雞", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6uY2kmzArDMdJdn9haJ-lXRrBdvVdq2cm19ijJt1xUP3aSU4T_8MBMmGjMKcEx_N-qVxj7ovtJ1678QrkyyAYoCeEGnXeh9SpS36J2vfIufcZRciCINCELQPnimfZmfEIQNjNNXEz5aDCo_kYCcLo9m9DJVBYUtyAiPbs2Jl5EJ0jRHVXHnqA2eC8eG8j0iJjLKjLRCT_3EYLQIP-54LaqPWFL-RXmJYA62r4GvdMXrHJJRKdrMgfTHEA?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7N57geSBrrxifP73bLydRPIzrZrd6njcK6jeCDlxSC-CkHiugwzQ1OguTjf_JLAr1azQTwfpBYaX-HraFl5eh53npbf5zKFTobwdmgzT3aFx5-kcMngpT3clx3w_OJql6GD6YL0xze_XykctW9F8kvwYE60sNCrhE81cS5cYQPNAxSpFQ527xGwzyieikbk2HrYqD45gbo_MunC42WCB8cxsiJkMmlvN1sJvTE9dII8n7jccS_MgZ_4_0?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "客美多 難波city店", lat: 34.6623856, lng: 135.5023381, address: "日本〒542-0076 Osaka, Chuo Ward, Namba, 5 Chome−1−60 なんばCITY 本館 1F", note: "(客美多)1樓 NO.1炸雞", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4LjAe53uUOs77qgq4A3BiZQQREc7dLY34cmbwHKUsej8VerMdVGTEGSH7N72VJTqleaqsHOgzcxK-_bVCjEClsSYAChxphRYpMsO7yhKIRmpqmnTNSx_luqNVOCLR-QsGNHeFoUIsKX538NNSg7UIgdDKE5fHSSd0f8Dp3xh-Q4qsnht0ge1T1jTZNwmtuCEFUBJuPu15q0idi2vK8ofLxfTVvvo3yg8jWBOgK6lJLLF83YTP2HTERpYo?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5B6ZMuUKaJkb08qQgubUKUss0QZ91A9cUtCFtVXshJXKrajfwGGb79zpFZoM-zdg55-dCpTWQOue6HM3oPWoslGX9E_Ov7HSWPX_pfW9ZCc0dEupSdYkSJnZsKSLxRxOX2l1TCAtlTzMWcQYD4sSDtRR9ReJHGgc9cIo99UFr7EAffTAmbO8pl-IPpMOc0ZQSE2SZP-2IIX9VtCj02vn2t-VK4lWVfJDvj_DXuKvWkMvD-5Hry7ANJ5w0?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "KIDDY LAND 大阪心齋橋", lat: 34.6740818, lng: 135.5010606, address: "大阪府大阪市中央区心斎橋筋1-8-3", note: "(KIDDY LAND) PARCO 5樓 設有蒙奇奇專區", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7ghaOkBxevn1d1gHYE9k6JNpwxf5A_YkIOfrt2AVYq53XnbT-td2HwcpXNr9eDE-IttWDCf_zSl8-8qyDBqDSBDoSBTlkMW9FibKSKRfI_LFtLSXzRlfzF0SxbbQSkqy_Ve81ErOw39KK3eKoBlmjFOG5ev0JCogHcLjEbqDDvaKjAyQbgCo21FZArXxnzgawaEJ21EjqrVks4rzGFOUh5CHuc8CMRjIV5-zhkQNs-TB_IOI3BL7an0yo?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "BAPE 心齋橋", lat: 34.6781, lng: 135.4988, address: "4 Chome-4-21 Minamisenba, Chuo Ward, Osaka, 542-0081日本", note: "(BAPE)鞋子服飾 衣服配件", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6oLRRaXI5XtsMEN6DTGr7LFExA-2MYxOtyjOi4VC6ZdX1N00yCc1-VMo6cOEIK38TWgFB7A2tNff2ADKXK5zbccJtITW0SMKxFxWoHIskNsOA9qltBkg79S4gepzIt1OE5G5sMmSa3yARd0FUiAN53iZisMEmqk8QdMCsU4o8EO99tp1SSTw7pXWA-LPLQg-N2mC9Ie6QpjwtAFKuiY-OgvuHRsx2lI_EL-ZnlLVxwaUD12TclCDKhr0o?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "BAPE 道頓堀", lat: 34.6698, lng: 135.4947, address: "1 Chome-19-2 Minamihorie, Nishi Ward, Osaka, 550-0015日本", note: "(BAPE)鞋子服飾 衣服配件", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7KtblKe1PczftU8F4PFFAndZo99rVwhVW36_kL4qY4XQzIXENAardxUdKjiObvp2PFEvl4ZEGraHg-hUn6pDzLl6H4f2HkQiUdKMGqTeVs5Coyi6Zxrc3zJLBEEKM47NNf9VgQwNiWL97iPujLrVtAVjBAYVawYDasOy0QyUYWpF53jK6tFpqPq_f_4W1oW_moPRPMOYJPswWfmsHKuLBiYa9KLQqS7TW3QUCjkav7c452wnbC0biqQ2w?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "巴黎山城Paris Miki", lat: 34.6726, lng: 135.5012, address: "大阪市中央區心齋橋筋 1-4-26", note: "(Paris Miki)設有雷朋眼鏡區", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5iUlgcorufnFjDs-0lhxGHf_Uu2nmik-UluR6rtFM87blgqI3WRLZGuAZlwXnLQBbc-vdcMjLYKo2G0mZqhCuv2g1xt8SrkhY-Va9ovquHjIxsVGbq2ng4wJcdG9NtWwyLU09S1wnowJda3U83w0jsLdGemQzu1R6mhM6I_U6npBTpvi7NN99orFq7XthRMHFKk5FZOlaC55Gz8HJepG9vcaHCiT1_2mU9gt2xSBufvGShn6WZbJiKG3I?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "HANDS 心齋橋", lat: 34.6737331, lng: 135.5010929, address: "大阪府大阪市中央區心齋橋筋一丁目8-3 心齋橋PARCO 9～11樓", note: "(HANDS)擠補充袋神器PARCO 9～11樓的", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7ETGpFyspElgxfrn7zF9YoC6VxfhDwKVTNqc_HYM1Ps9iimmRXmeUtZ5pjiqejJATD9LN2b7AVGUXFLFNbZCfXKPmYZwlCUYuVHzOEZtTUBmkgFBr2c6m72rf4py7Hh7hBL5nRHJSMQR6auRgbiyPKPoWpctbVem9ZO-34xjG0doQWK2Mxz7jsewyIOb5p52zytPElYRp6ie92vmQF6Ut9ZUKlhM_i3TWlN1luof5LbyGFcVW1Ba1XfrY?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7YInvMIBPs-F5XtBAIVnBK9pRnGE7o5fFBmsTeFix0e8GeiyXWPrJKUdVUXM1Ya9icIicU7s5A3JF-bMSF148vSatF1b4GbVKaBLa6PiSGtlGUWrom2lRHZ9uMdg8gQ8BA_Fml8uit8GXp6f1A_4eA1e2aoPfUwafzTfFFOdXgvDadg0Jr3QlqU4pe6nWhC5puj7vJ0iXs6v4E_OhYTLO3SF9SOmhpcGkLTCnzueVP29AXQvRcQFxHtZg?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "大阪燒肉南大門", lat: 34.6713, lng: 135.5029, address: "日本〒542-0083 Osaka, Chuo Ward, Higashishinsaibashi, 1 Chome−８番地１５ 中正ビル 1F", note: "(南大門)心齋橋大推燒肉", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5UyWYiOQu5bwojUBbpygl3B9P2hxWRX-9tuywRpNC4HJpBO9XmsqdsfORK4w8TheEOTzIsr64km1Pg3mLwj8Bgzh9G7Xavs9rwXE8-7ARAMt7OtFfv9bMITN7m_jFTY0XGwSwvaYeY_Nxls7T3LuscALqgEhB9oRyA06mQ9ePzbQ5VH5DV3MXvkdfe0H3Gh_fY-Pw7wdNblcIu9VQjzz_FXIHXRSPhjrjDqM-UI9_cqaeZLeyneq2DoLU?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7ZM6wV5qJtOITaVYwY6Il7StcbmkbvWcE4QIGkAsR55veGsydi1g5m6uL3NqcZ8ZrJQ6HD-odCQkzCW_O66b5ANLAyEx3q-MGva45yErWJZy2l6pv8UpOws12QbkOAvyP-KMW_IrYdW6mYgxuCfoejvNIVo08tMHnfldjd0cBZziBzVemT8mKc6-4Mk6te0BrR4DBJyAPLBMFhXyQNdPU4_sNa54ptCz_JNMUpYWlfnP7549lPmaWdBvM?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "眼鏡市場 心斎橋本店", lat: 34.6716, lng: 135.5012, address: "2 Chome-1-20 Shinsaibashisuji, Chuo Ward, Osaka, 542-0085日本", note: "(眼鏡市場)碰運氣看看有沒有雷朋眼鏡", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR66FjqBt3LLh3TsCcTqKxG2OeOPA9irWmskJRQblMU-fxRM0AU8P8yzyBge2z1Fe0knvi-an7uoNrRZ4qUs7BSdcSRlBWU27pAbbDvyyvxN_X2k37k4u98iLFIX0nDlNu3PaiNPfERV4C9Jje4sRKmMT_9QuVT7GXsNB1O2wfMtE-Sq4648CFUKOUzi-bC7RkgAwpdNR1p9Kvzi9SBYIUgN-jSSanxMr2bHhmSxWWY4Za7Ull8c-2jQPF8?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "りくろーおじさんの店", lat: 34.6657, lng: 135.5010, address: "3 Chome-2-28 Namba, Chuo Ward, Osaka, 542-0076日本", note: "(3 Chome-2-28 Namba, Chuo Ward, Osaka, 542-0076日本)老爺爺蛋糕", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6kRwhmRkHxpVjxdVCkAwoI4jSFBYEzbzCWuPR00KoZnLU9BvWLhZozVeiHUukRyVXplbMl1H5gTw8x7UEyL-CDSmgo8FfeH2b2Au1f3n8Y8hGPsaoYTYzuCxGfVwy0BlKCJ_jksuyBoRmFdDgU0pM76x_EqFgKkZvkXuhZLMyl76rdf6JFp9rSGSzyWQ7Kp4WfYXJonh_3XRVg96032PtqCAMaxh7ElMWSTYv9w0HqQF9qxzShuJDC3_E?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4HwtAuk0Hd_s79HJ6ny1vPx_XW4N6NVyzOeyd6WTMMgBgvoL1YXH525hqYiJv0z_rl6c18-czdLRI83G2haTIQ3UVpGvnRH_zNBBxLqa22FkpbJ7D2Nvdf10ZQsc1fq6avLKfRiIwFMs0umier04LV9GusXM7d3IxGGsXIuTcC_G9LQMlfM2SUKbChiKrvsttPtVy1hDXCGFcixJ9Upl4we9PLXvifgtTTvNLwMGHInr9fWhtoa8XfQTo?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "SIROTAN", lat: 34.6672, lng: 135.5022, address: "日本〒542-0074 Osaka, Chuo Ward, Sennichimae, 1 Chome−5−番4号 3番街南通り 虹のまち", note: "(SIROTAN)獺獺的店 在地下街", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4uaALAMNlvpDaswtRzSXJ57LQxvH4NZ-R5ZYUXxsjrCtWgO-zc0bKt2D-jHbUMi3SXld184QRnvZ7G8PUDGx09F3oAEGj-utCo8BZKi9EkgCAilG97SzTCLLb0JfRMesuBlpwi-nf-BT2atVC4d8Hz19dhVymPsLtZeVdrJPcY_6WEo3QF_afThlAj5FOzOKxCNmokbCXpPqriWl9Gig6bdQychImM7KDyQR97E1RKhdZpS5pSGVgWoSM?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "topologie專賣店", lat: 34.6739118, lng: 135.501188, address: "大阪府大阪市中央區心齋橋筋1丁目8-3 心齋橋PARCO B1F", note: "(topologie專賣店)心齋橋PARCO B1F", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5qEutX9lR5cicFRuuE0Z_MHokADlw6iIF8GJM6k-Pwm4Prbnyf4WZ0Hags_3joOr4m0rlHknaUM7qyy3l18u524aM7iXGl-hM5juZZzSSP686eV-oGHTfqDm2kYL9z5keHVxTh5q68DWoDubiwFvqoODbeZpEfkAmL0h-DOgUOjT0_osW1S071BfAk4KU1HF7buXKOk84HN6aF7dBhsU8RCHXKs6_sLj45v4JVcPHBdU32paf1bJsbW5o?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "Shabucho壽喜燒", lat: 34.6725, lng: 135.5034, address: "大阪府大阪市中央區東心齋橋 1-15-25 1F", note: "(Shabucho壽喜燒)A5和牛好吃", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6V0Q7ZQRlbKDumIQ4iQnj4XlpUICZfG_LcT6ZaQ-HmeWB6sI-YCUqa_qEv5uqzz6rdBNMmculVyMucQshxsC08_b0fvT3AWTFqsS1eRZlOxQoKrJQgB-OmIjj0VUfW-lygyTDtNyubfSkEhs3_hNplATowlknyK9d0WSZWnK5EHpWDPDquoDOIahf305mEEEl_gQrYpiFAqf6tn8n1M9g5dJ-BBwIP-KjYiwIQ6MeA09Y53tKE9KHNffs?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "千代松勝蓋飯", lat: 34.6677, lng: 135.5037, address: "大阪府大阪市中央區千日前 1-1-10", note: "(かつ丼ちよ松)，原名千代松勝蓋飯，大阪炸豬排 道頓堀本店", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4gWkoPtDI73Sk90sYFPifDDGQnqiiP90W0gN3Dr9DuCK0-2ka9VT9VDYK0bk-ev0CnwWKOCR5LI-HERAS5ze1aIvPGsmeRieVyAOeSp5w7rMou3BVw2dU9vv5jSj3nWVuCSrfaIQrqs5ybaLHscI_tgIXPgyLHd2iVP9CFn7586rqqxf9s-pqxjtRSX3x3kyncxoHqPYOf_WXJXlROa8HbNhMa_2JtGl1UYQLAX7cTg9uXc73b2MY5H2s?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "神座拉麵", lat: 34.674074, lng: 135.5005905, address: "1 Chome-8-3 Shinsaibashisuji, Chuo Ward, Osaka, 542-0085日本", note: "(神座拉麵)心齋橋 PARCO 店 B2", price: "", routeLink: "", imgs: [] },
+      { day: "大阪旅遊🔵", name: "神座拉麵 道頓堀本店", lat: 34.6685, lng: 135.5025, address: "大阪府大阪市中央区道頓堀1-7-25", note: "(神座拉麵)固力果跑跑人附近", price: "", routeLink: "", imgs: [] },
+      { day: "大阪旅遊🔵", name: "難波八阪神社", lat: 34.6615, lng: 135.4968, address: "2-chōme-9-19 Motomachi, Naniwa Ward, Osaka, 556-0016日本", note: "(難波八阪神社)", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6yX1oEYyxubNB-gHmBi_lCK34GAHVFO7OR1ndaCcpn_BrDuWmRAZlNoEtB9_DYn1tpAKNQVBR8akRBQbuOWamoV90M9b746XocC_IKsL35R98LObhT4sZG3B5vJb-2GzAzX2UTU_oqNaKOSS9nsBPCpRVi8FcOgRthpTm6ek0mE1I0zyMMyGKk77UXK2-wWG6PoAHy_vEVF4SB_kaxi6eNoEr3cpnuIfNgD4-2GCIHZsXJwhgm4oV8ZTA?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "Snoopy Town Shop 心齋橋店", lat: 34.6737133, lng: 135.500679, address: "大阪府大阪市中央區心齋橋筋 1-8-3", note: "(Snoopy Town Shop 心齋橋店)在百貨PARCO 6F", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4BJsklllwlYiztGC-dvprowWa1nLXIFt5wcBsmVT5YY8a5RfoXG6DWOW_uv6PzH1DwV0GQWqzCsGFHijRSd8b9atWfAUYZ9-gT5QMUQQx1VSeFBRUeLHVnssFnqQ3JLX8fjrXJaEQ875ndj5QSAufIworLtaWJzVDJwgLUhxTdTsDFOU3IK1loeVwWMaej_HrbFLXF0vhwIdqYgwiN2AZlM-BSq5B6X9s2uh7nvZTK517_PqmTyH3SDcM?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "Cafe LUMINOUS", lat: 34.6732, lng: 135.5030, address: "大阪府大阪市中央区東心斎橋1丁目20-8 心斎橋Dcビル 6階", note: "(Cafe LUMINOUS)千層酥 6F 位置不好找", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5tFKXNGQ_LCwKamIBYAeIbN4XxFg1gKkLsPOx1te9xdR-KTZVeNU9_nKQd6sm7iK87FK3N8fWPtgUm2clTs_-YF42cIAfIJ3ohKOBiFYBVs3MIE6pxFmoevGLZV_c8MEw6E6m0s1BGDU-tHKhU5LJTB0CLIP_Y_SgSmuBMQrYjbz6kfw6W-C9B7KlKjjFwGVOcwbH4X3vtObmC_503xMcgx9x-cUUDMMNOn_Y7VZIDVxRkwzeXpf3lb4Q?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "唐吉訶德 道頓堀店", lat: 34.6692, lng: 135.5024, address: "大阪大阪市中央區宗右衛門町7-13", note: "(唐吉訶德)有摩天輪的那個", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4ful6eEC3yVTX6yFZwUTO_6uJ71CFNrcWRN6ebZeMJx2mNG0RH3diXac6vEN6wodCMqfwgcXo_PWUh5zs4osH4esf4L4SNI4o0e1053HUvyFbmT09IVWCI8nkUxQ-6-_bBepPn2X2YaXAuEBA_3p4CzXERoDZk23-f8aemjXPaeQIqrjyUA8teCCk9AudxAK4cJeIy0FGU0AUpzfZDyjG1r0N0gxYWe-7KDHTKLjGmY36oC6j9b4RMR_8?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "唐吉訶德 道頓堀御堂筋店", lat: 34.6686, lng: 135.4998, address: "大阪大阪市中央區西心齋橋2-5-9", note: "(唐吉訶德) 也很近 很大間", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7QFENEjlMUjDMRyYsn3XiFNzDZqkVUXf8Rd4KEG6grg6jfe1t7IONN7AGVw8vH4mTfK1ZBpUNIjIccGrCBAEwsSGxim3RzNGFn-sjLyf3pk9iXQOiBk61QZosJZonoCYOzawFE6AWgOZ90zrTRpoDrUfPkoWNNuXDSggbDYSTOmHDKmN_B4qDA0rU3yKkpDqQghKpg26QgHfRCFAkKPmwDh9STiwjVzDvBG40pYVm_PR2V8tmqGQpH-yM?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "驚安殿堂唐吉訶德 難波千日前店", lat: 34.6652, lng: 135.5031, address: "大阪大阪市中央區難波千日前12-7", note: "(唐吉訶德)好像是這三間人最少的", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6GqkVDs7JRi8AG_wrWoNy6On0j6AE5rktpK7245Al6kPllquPxg1yyfCUjYwD4HPhVq0vdawMSczNXmfgs-JoJsQKUJTKgPFIYEY54IIEyOjp5nWGPf-Vvg__EswcZWBOITMV1NrI49CMGjLWjjC5DKV7YC0qKeBcKXlHjE6pxlZOFOE8zPSIpi30i7JLcx-8sOCxuwRCBV1zfE6nNrOTRchSkk7LEPKf_OoH2Cqpz8bBdacc9nJcBUe4?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4b24IlUam44hJIoZK1StH0VlPRm9KQQPsoC1t-Qpg1Lj3UOTo1BHGHPKrF0Ufahr7CEOrvGV3ohQfsrT1iiFVw7Bz19laYlNbCf-ojxZ_rzqPjjXbf4bBfu0ATt_x0NEEtrcbn-epcxkxmEAx0arbMxaLipMTHnjuERUkB9gO-xs43LJZeyrF6US8HAnFSHylX1la4TRx4pJisjSAIqqbe7RPKtKH-fZdzgVP-WP5rUQmiSEJSzV887Hk?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "GiGO 大阪道頓堀本店", lat: 34.6686, lng: 135.5017, address: "大阪府大阪市中央区道頓堀1丁目8番22号道頓座ビル 1～3F", note: "(GIGO) 有廁所的扭蛋店", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4egg05XyAEzJvOMg5iUkDecgm7IWEwbhte3-WCvoK5Acl1RYH0_uXu27LjEXQG1OrjI10lNJNCVcuMuMO0xv98AB4jUgufmwQYpKBvC6MQzAHlQ7xzJI3A-n2L1sodQBgfUSHUD_6XBqbpUR1e9S0WfKgcL0JlUpdIaAXZp2D60CKBT0JVcK98ZrPl2Iy7AxgAL5uGFRACiCUKIM_VEbLg-fChJARMvHC1H2yhcTQemCPzHRzkzykd9nk?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "Chabacco販賣機 車站內", lat: 34.6649377, lng: 135.5001593, address: "大阪府大阪市中央区難波1-9", note: "(Chabacco販賣機)車站內 像香菸的茶包", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4w-m4lH7MSmk84hKeNQRW6o30z5g9rpi_uhyADRApgKkU3ifWOLuzZUnyZ51oTqe43F6LjbZfCrihW7s1_5O9l9eNwdZBswGLxxv6yOOLcxXlZCKwXwkVeQ_UtKKEWAHegw2eEcT9TvP-5LZg3h8intc1fHUnn8O88bYuYAZVHrcjN1tNQx2a2APFByiEURd6zveJGEC3SwKW_89NLLX_1y2UGMo6izOeoY6idxZNR4uDA3VJAHoRNkuI?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "Strawberry Mania 道頓堀店", lat: 34.6689, lng: 135.5020, address: "大阪府大阪市中央区道頓堀1-3-17", note: "(Strawberry Mania)草莓可麗餅", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6RPkcp0a4RFROTt6ueVqrKYgoBUbqtDzLKWQ6MYfpfly3FpfEjAGOqCg0fFHK4pN-u6_9WadYg0nbzdgQETArq2KMLuVwdJa51TwqoKHcxG87w8D4RzvEeiaZisMBsc9xf5ciQmu0J4MA_8Tk72SEzsZEC4ts8rvsztr9M8BHVyRxsdMmmld8poJaSyloNERvRrKNcr7BfUT7Afl40E9-L2NlT0cZckNux6TfkyrR01ARiLo0o3EQovkk?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR69t3_lQ0Xxvva7DT9-oHww7giSlOCAUXY2YI9_HJ93zqm8KnRxMTos_m4oBH5XgXFI2c-jcbvCip_ae7jky11ZtlFUiObEeaqlXMqR1hJ3p7ypA5BtJIgzpg7mbr5FUTAladcIhvdsdCnwXIYEP5lHfCfO5whQlFZfZLSUk4paRVTCKsA_fXovKFKeVrVI3T7T87EEWfnz3mQ5QlPPIk-O9YIcoidgTlH_7L20skw25n45u-ixIDKUVgk?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "博多串燒Bettenyokato", lat: 34.6725417, lng: 135.5022509, address: "大阪府大阪市中央區心齋橋筋 1-5-2 ヨーク心齋橋ビル 1F", note: "(博多串燒Bettenyokato)居酒屋平價串燒", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6AImojTZgojhsh8DKqewPLqKgVL8irrsbM9__lVmpkP5DKjwyxzXCgszhm73SQgN6ZO30w_JMcHWzkglIITJNtQ_wInLvpPqIfrdEsD9gAPTjsI73Bpi_psA3Vg4Z4xqoUu4Qk4zATdwaAGS6lZS_oGkg7dJO0uchJpoG50iuJe90vGJPXlah6xbdQs6VMwzVsqL7_H2G71uNxvAsBP1Zma8BsBogIbU0hziuEp5moK-z9Huizk5Cpe3w?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "Chabacco 難波5樓", lat: 34.6618613, lng: 135.5019172, address: "大阪府大阪市浪速区難波中2-10-70", note: "(Chabacco販賣機)百貨5樓", price: "", routeLink: "", imgs: [] },
+      { day: "大阪旅遊🔵", name: "御津八幡宮", lat: 34.6714, lng: 135.4988, address: "大阪市中央區西心齋橋2-10-7", note: "(御津八幡宮)狗狗神社 寵物", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4odGaNc-xCtA6ENbSkOdbwCfz4BXZq-QX-v2ieN2lFPbJcxvahk_5Ynock4QUI9dSbT3HyKwpW4dQs6fdQGwjVzeuXee0MbSXXmyLORITfEqYJ6cidXT7zR2B6mUAqOIO3PxALmLUtcgs5f9omvXx9LEXqIk4yTroc6z9PTe9jKzis6YO3tFR_DIduiRtR9CbfbJ_r7wQRrqDPSg9MnKfBNhd11QKfyfIHv_cRt5gLLFOoFo6trTCk4ac?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "AKICHI", lat: 34.6608, lng: 135.5002, address: "大阪府大阪市浪速區難波中 2-3-20", note: "(AKICHI)杜拜巧克力Q餅加可麗餅", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7QIJktlrISgVvMTzVKXFIcs-17cdd6GR3y-2HcDE-XQsAYTM2CCCPvq4rD5Mq75i1NquE0PZ_1UqHRKbEHTfnuxsJY1mmX8U1fZeKf2C0CVQ73S12OUMeH31-TE8Lrlfr9IxFFWadyMB1L2EncSvVvZdRWX1Et4YYhwO7Y0-Fqadf-YgYW4ZI8XkQ_Sf1IASZYaVxAuutouW55_Df5PpUIiOtyi5_NmK5yXzLoOHN5P97HCSQPKMmTYfQ?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7FbShrMfQpyFPK41tDC11mRQ4uCXmju_Kv0FIaT-nWAleu5VNiKvsVH0Hlw3JOtM7jTUp1UkZoTq3_F6SddSrLAwWoCnabJ0IrxOAYe2zucFNMgRKV6yPbH5bTFee3jxaVogo2aW2D0LeVkSC4UG1n4v0w8hR5_GQg6tFOCjRxPk2FWbQX56CdD2mEXKfVgeMoQ_kpjlEvus7LcA2JDGtKewhOkbr1Gpi6ZVG4Gzq_L7gguKixjEj8TrE?authuser=0&fife=s16383") },
+      { day: "大阪旅遊🔵", name: "麵包小偷快閃", lat: 34.6465, lng: 135.5135, address: "大阪市阿倍野區阿倍野筋1丁目6番1號", note: "(麵包小偷)快閃 阿倍野 Q's Mall 1樓", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR72aLKu-pJKhKEuasY1x66LOV3xnrP-ncX1JnX6YeLFNSblbJa769rahBdtaDhVAvxmuQlnKSmuH5P33TnjcluMZZZLHOK4sUmRwoygWzMBpmQlN7YJod18-TT0YDAX1U_lyad5e-AtB8we__w3Mp-D97fjm3MnzO_ZiD409EUpWcyS_zAzwBopx6yMZ9BbaJ6gasNWIaMRkFdAAImjcUzNmxO9-s5uGJZH-Ho6z_v8AQjgtqEjtCviw4A?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5tnfYQgIM3QbLPLmTjyYI15EbF0akW-iS_7y6bpWYZxGDN-R2OWnO7aJjBYvpFrU7RIojLOO7pdKouIBHAIS249_QuIx_nSIYhdGkgC5O8eaxdrafbX01NInwdqrhp7LgaiWsg5xd7TRMhzt5ymJyUE4DFs74b8OL8BLMf_W354LXgqzeyUAiwDYQWIEx2DWYkDdJn8q0wDjnXr9XQExLaQg3LvakViOSLRuH-VY2mSj-SmXU0n_wokac?authuser=0&fife=s16383") },
+      
+      // ⚪ 梅田
+      { day: "梅田", name: "天神橋筋漢堡排", lat: 34.7001, lng: 135.5118, address: "大阪府大阪市北区天神橋3-10-8", note: "(ニクサングルマン)多汁漢堡排超推！", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6lA1Gsyo_-XgHg96xgQnOjVhqdD2VVmvf0M2mCPQMYllpasiz0vCR9KRfbSSjR_-cKgaqDTF9muny2mh5E-iobnzmQnSQk0P1iRJomP6OCUW_aeT1Qm1JaCdpaKQ20HBjz9qWVEneTfBrUuVONuoGVFbPpsK97sEIf_gijp1sR9gNT26ngVZKOf9aKnJZTeYElDZuGQYeFfPY1tBRBr9xKvweXV9nPoxZ3HzcrGbVp856NkkkAKTwUWCY?authuser=0&fife=s16383") },
+      { day: "梅田", name: "東洋亭 阪急梅田店", lat: 34.7032, lng: 135.4984, address: "大阪府大阪市北区角田町8-7 阪急うめだ本店12F", note: "(東洋亭)梅田分店 招牌漢堡排必吃。", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4tZVLvN8KU8Xy1E9x2wQ4MQhqhG7aZ28g_YOYMyZ8tPzFCoqruzSGJwn055coXbVsHCz4VPN5rjpyG-j2DL1CWCq4oKXhifm0Jf8My-P6HuTYj7pKDkMLdRbvAhzsA_8KQrMO-XEhtwwTRBQZMZKCa9OhDHl6yWFKBL4MRYrw3voJbScaDVz17kxOOu84W48NgWVToaL6t-MbZH4t5Le0pFGAVn70nmh8KR5n51cd3OdxR5cMtfqbZCno?authuser=0&fife=s16383") },
+      { day: "梅田", name: "成城石井 阪急三番街店", lat: 34.7058, lng: 135.4981, address: "大阪府大阪市北区芝田1-1-3 阪急三番街南館B2F", note: "(成城石井)南館 B2 找大谷翔平愛吃的優格。", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR50rNykEG1WZhDRprJUIHDCfs-Z21HiubnbFlBWpDt9KQo0bXW0pXKorPyaGBVULTwO_7xgSkNqomkXxxaWRFbvkFOYXKTqY3DW0sLdLHd1zTobct388gNwt_3FFGsHA7r37AmJq5xuwkFJS8_6UCYRnX8D4yohvd2YldXr3Bg0vde8xw2rCgE5J_aNylBpLbqoibdqQ6FE2Sur9ZOESHVILoOUFQkYEottXyxsUcYlT0w3xZWd4ec85Dc?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5t9z_CYskH1ITD2e4W99iso-XfqMMX0vKOMqAOGkks9F7TejoBePTcbVvYwxF5wML2naiwmZ4t76ESTnQKu5lPLkzC0Z230KHqhkgZHqEUSNjZIssI3apfhIN3Ccm2D4hLtm-sJkMSP_iJ3GpQyYE0FDa4W0p4TFzeR02Km4g1H8PFNh-s6D1E4kHTqzMo2oNAiK2QOImqaRcrWjHq0VEW9rScO9f2bT8iYzPGNTLLPllV8qhoLg98QOY?authuser=0&fife=s16383") },
+      { day: "梅田", name: "KIDDY LAND 大阪梅田", lat: 34.7062, lng: 135.4982, address: "大阪府大阪市北区芝田1-1-3 阪急三番街北館", note: "(KIDDY LAND)買部分蒙奇奇 在北館B1", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR42jTLwVgBRsVxOYd8lhbQlRRggFbzMln94_oiaoVb6-mmgDKXAj6H9oHZEHvN4crONaqjabVcz7mMR3daEgPC3z2fcBMogIrsHCoxZltkZDcgFiP_3cu5zkEdsX9zF6u0zGFD1IKsCk6ahoaaUTR5y3uMfRu23o6sNqBvvIWc5q5VUecy5O3PRccTS9fP_5chI3CPSyW9613NEZ_JX2UM_t8kFPpnm63P69yJ1XtdbDkhorj6S2dTNvhs?authuser=0&fife=s16383") },
+      { day: "梅田", name: "治一郎 梅田", lat: 34.7041, lng: 135.4947, address: "日本〒530-0011 Osaka, Kita Ward, Ofukacho, 4−20 グランフロント大阪 南館 地下1F", note: "(治一郎)布丁", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR773-d6YcY2HJuoFem6KB7arF-JfumVJGy_8WZLrSrla5J7ypi-0vZX5hiTvBBaJfSitLZVS-EiTnEmi0O82wxMULOdIitKT-n7KdFoFotcxj7Nz2hqifEfGmJ1cuVYEHwjEA0PnYURfvR7OZUMmlyc3ZpBBvKKD3ynx7ELc-9mT7BlNQBAY17_x-6MAKu3bcKsaQ9OREaXZp84yC59oY49l-0ir15iE6rRD0Ix0DoqiB90sj7DWCEFNzY?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4cvoaU5k7QUDhNhH7Bwk7-lXHnRB9I5utjyAf_urEiQVZsge0MgeT2wvl8Jle0JOocqpZtYBPnfxq9HvshQwjpFMwmpslfbxnu6NUnAod6hoc-a5BsX640VZcmRTYLU2ny7C4SqEPz_eHLUf9eQBXxKjcIg8Gf6PevI8mgXQAeZ14MyUQXyMKfBsDdOtLG7VMeWvHI-GVja0sq_gRmLilQK0yEsQhpKcXvxci2T69jFx2IgrGtEhcIMI0?authuser=0&fife=s16383") },
+      { day: "梅田", name: "3 coin 梅田", lat: 34.7030, lng: 135.4950, address: "日本〒530-0001 Osaka, Kita Ward, Umeda, 3 Chome−1−3 ルクア大阪 地下 １階", note: "(3 coin) 蛋蛋器", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5FUCODH4DTyzBM797Xxgm6SbXWh_Sn1g39cpmjo6jNoyz85FY-Glwg2i6tVuLFX_wSBnj-VWYZzjFnInAnDrW043Ci_iN5WboNTKbd9qtx9bTNl1eGfzn38JgRw9gcRqM2V9jy6F9V2Qnc4vVq_JfqLoW0mFL9Q8ywDr1E3w5VY-vz0JWO8mCViRZjD4IyOpBIq2dQ4Y4QwzkOVe3-LHfsXs5o9jT26PkF7uAasePJXxqffhRdM9SnrcE?authuser=0&fife=s16383") },
+      { day: "梅田", name: "BRAIN SLEEP 梅田店", lat: 34.7013, lng: 135.4975, address: "大阪府大阪市北區梅田1-13-13 阪神梅田本店2樓", note: "(BRAIN SLEEP)2樓 止鼾枕頭", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4JfFOVh052nfBGzCIspmQ7ArBRzZQmRxIR78yD_XbHrbX5ZUWLzieAkE2QtGcsiuf2T6iOQDeqH5S7gHEyGYPKz-XLUIR7rgatlp_206fBO4-lKxBc6UHDiOSO34oJpXVOZeWCXelryonuobtoAYzIoLW2yyqDPUACoBWHPrSjEkY6HaIJTlfOGIMY_Y0VZmlanKiHpsS4frTnOGa5QKCgplLVo3VziEIdUklWqUVdrU-ioj1Fz_iZ-Ws?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6AWfkoE0EF56WVZ6fQ1cAKHDdN4okbvUfEhUH9C9fyfvKqAAOgSZ2ldojNYr0amEzHKXrW5IgHOeURDrml3gOCxON-ioMVoXoyx0ilCnIm5xIp3niKJknnyj8_0mZ2HW7VIHC5vMI06l7_SvTwrhtwZbGTUmamPBOdiJjlyc5K3iSBpE_smWN7lTTfUttVM6_cFwUNIcmaQXuW9KrnmbtLr6NPtBB_iAEMd8WL0KmnrwffdCIqdR8o3Cc?authuser=0&fife=s16383") },
+      { day: "梅田", name: "3 coin plus+梅田", lat: 34.7029, lng: 135.4952, address: "ルクア大阪, ８階, 3 Chome-1-3 Umeda, Kita Ward, Osaka, 530-0001日本", note: "(3 coin) 蛋蛋器", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7Cl5bcnaEQu8qybzfy4RPDdolO-Gg_D9NEZxuNV1qmXRJKnA5fJsdPnO_sWm1oJ72E4wJ_cW8HD8KolWsiGq6armN3zJFWxaMB9KtwRqy8Fv3xLisPjIHDhKd9iA8gz5d8sSqBKfCcsKtA54ixgn0ob7DolYB6pmN9ZquuxGhhPAKlZlwswryrr9nSUTG77OmpKIs2gnm2vcX-Im8M8omvQFUaI3Q_CbtzgyZVIeDMVqU1R3yUl6HsagU?authuser=0&fife=s16383") },
+
+      // 🔴 第四天 奈良
+      { day: "第四天 奈良🔴", name: "東大寺 南大門", lat: 34.6865, lng: 135.8398, address: "406-1 Zoshicho, Nara, 630-8211日本", note: "上次我們逛到這", price: "", routeLink: "", imgs: [] },
+      { day: "第四天 奈良🔴", name: "日本橋站(K17) 堺筋線", lat: 34.6671422, lng: 135.5061047, address: "34.66714226038671, 135.506104747819", note: "(日本橋站K17)往奈良：近鐵奈良-近鐵日本橋(A02)=>近鐵奈良(A28)", price: "", routeLink: "", imgs: [] },
+      { day: "第四天 奈良🔴", name: "天下茶屋站(K20) 堺筋線", lat: 34.6371818, lng: 135.4968035, address: "34.63718183338599, 135.4968035429613", note: "(天下茶屋站K20)往奈良：堺筋線-天下茶屋(K20)=>日本橋(K17)", price: "", routeLink: "", imgs: [] },
+      { day: "第四天 奈良🔴", name: "近鐵奈良(A28) 近鐵奈良線", lat: 34.684316, lng: 135.827515, address: "34.68431600452816, 135.8275150984355", note: "近鐵奈良(A28) 近鐵奈良線", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7cLPKaRDvG0JsdT3COkpzSrBoVLkARqiyjCa8J2YwaHuLTUCf7lCk17fFjw58LXufUNkVQC-flcwNCAJYezJ24wJPVADxTixpK6bc1thwD_BbektU8OcvvZJv8x8XU9tbP6yZv8S_GFn40sTwFTiEYjGX0bccXlws3I1JYstnmzOQy6tyNh9qAcjDqqSg2OpJxsvAw9PyBjpPLsQu6P91duivlk7cTcFjJHM5xXoIxTGnGI1jnnjp5Qu4?authuser=0&fife=s16383") },
+      { day: "第四天 奈良🔴", name: "近鐵日本橋站(A02)", lat: 34.6669768, lng: 135.506063, address: "", note: "近鐵奈良線", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4O8ND-vfpkYErYBV4EyeVsxvNX5u8_N8gDXiuKNs-8HI3icI51H3s5bM89tfiKJMR43WqaSTNJihE6ovkRpDjvZqmppZMwCGerUpkPrecqKSlcW1EjotCaaKL_7E3HLCgA1oqfD0ZchoyNvsTSKaOLgfKpFA9W0Pi_HPxdHfDNMk4pMUpkzDl6xaRJ-k9JSMp2TUJD-iAiknHzYOsiWzzy5RBLOagO5TQTfzwo-7l88-758_L1z88MUA4?authuser=0&fife=s16383") },
+      { day: "第四天 奈良🔴", name: "奈良(Q36) JR線", lat: 34.6807946, lng: 135.8189379, address: "", note: "JR線", price: "", routeLink: "", imgs: [] },
+      { day: "第四天 奈良🔴", name: "空庭溫泉", lat: 34.6698, lng: 135.4623, address: "大阪府大阪市港區弁天1丁目2-3", note: "(空庭溫泉)", price: "", routeLink: "", imgs: [] },
+      { day: "第四天 奈良🔴", name: "奈良國立博物館", lat: 34.683159, lng: 135.8383083, address: "50 Noboriojicho, Nara, 630-8213日本", note: "(奈良國立博物館)上次在這吃餃子 躲雨", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6BB7qqgxbfwdt01uJXvyR_J6wmyIg7i4Xit0b8GoZ86MEa8O97oF5AfaawXSnCKfiK6eI0AZi0h-SsHWWwJWqe_7DJAS2c_LooOLiKGwV7q5DJ0oB1L4VGT_w_eRfg59dNM26GKtnu0AuyjEDPBIUYbfMsg47s1yN73U_LQBch6ZRJ_JVdmClP8cYLrT9BmOiyNqGDGkXS4QLlH1nX9x1dk3MZmeFxRsYrFxbflCXo9ImET20gKpg7Y1s?authuser=0&fife=s16383") },
+      { day: "第四天 奈良🔴", name: "往奈良 轉乘點", lat: 34.637193, lng: 135.496707, address: "", note: "往奈良 堺筋線 (需轉乘) 轉近鐵奈良", price: "票價240￥ 6分", routeLink: "https://www.google.com/maps/dir/%E5%A4%A9%E4%B8%8B%E8%8C%B6%E5%B1%8B...", imgs: [] },
+      { day: "第四天 奈良🔴", name: "往返奈良 車站", lat: 34.685109, lng: 135.804801, address: "", note: "往返奈良 近鐵奈良線", price: "票價590￥ 27分", routeLink: "", imgs: [] },
+      { day: "第四天 奈良🔴", name: "弁天町(O15) JR環狀線", lat: 34.6701524, lng: 135.4619826, address: "", note: "JR環狀線", price: "", routeLink: "", imgs: [] },
+      { day: "第四天 奈良🔴", name: "奈良到弁天町", lat: 34.6704531, lng: 135.4598789, address: "", note: "大和路線JR 區間快速 接 大阪環狀線JR", price: "票價750￥  54分", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6JaZ9Kt4aSjVm2KTa2iZiZJnqzGGAdP3pUaKsIv62LLdHHxluwbh_Joeov7LMhDq9QQYwvVcvnPtO9fcDVPTFyX5WS94Mg9M-5ydHl6THrgogC2aMakE9d9ki-RozO_P9cu0oA36BiiR3-jHcDikj610ClocdDm58imbgTXVuCGAUBTuUulx_nb8IogdFQESENaHHQ5L79Sc6TyQJIQv6DclCmbnyBdvOClV2x5LID--7zgtCkOG2107Y?authuser=0&fife=s16383") },
+
+      // 🟣 第三天 環球影城
+      { day: "第三天 環球影城🟣", name: "第三天 環球影城", lat: 34.6654, lng: 135.4323, address: "2 Chome-1-33 Sakurajima, Konohana Ward, Osaka, 554-0031日本", note: "第三天環球 小小兵 哈利波特", price: "", routeLink: "", imgs: [] },
+      { day: "第三天 環球影城🟣", name: "往大阪環球影城 計程車", lat: 34.6401168, lng: 135.4981092, address: "", note: "計程車路線", price: "票價5500-6000￥ 24分", routeLink: "", imgs: [] },
+
+      // 🟡 第二天 京都
+      { day: "第二天 京都🟡", name: "唐吉訶德 京都店", lat: 34.9875, lng: 135.7594, address: "京都府京都市下京區東境町187", note: "(唐吉訶德)超多HOLLO KITTY 刮痧梳子", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR44FYve52hsIcpmo-wQj4bG5VSZzzuKDOSel0o7wPrGEuDH17H_1RllcuYDCNxCw9vtaGc_cQWZXeni59fcug8RCWz1rD_8X96Hjv5oqWWecV8xp2nuzovmnyHEWRvaOAhJzPgMXemnGKFMWPVb9v6KZRybYhdhSJmvyPIr5A0Q6NjU2YHoqKAgeMI0K3FIHX917YhNQXWaqXLLu3J5eoFWdkomS3YfCsQMOfIfsxy99vOlM-_OQiaedSY?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR68EFCSCo1pLHdjaTstRLK_SmSexvso_sKIvhp3ETIWDYRbHSD7LfR2gzRxFwiHvGYoXJgWsla6ydn8zR-tLFymVrYOZFQ4wxOWpri6QFswLY6SYk3oNVx2bO0HRHP7OBAV0qkCFStP2UN-PuSFyJKjophtMp19Dq1F4phLpxjNIYLIckiVVxsHf4IJSJJ-N4rLQmrK0XjS1Zhua9GIlPwZE9fBOS-jG5nxs38NK91BWx1qyzJtoji0rDo?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6qk4f37pei_WPAcImDZQkRLHUvL1KbbVmDWH3PVSUPJi9yLCvLkXFAaj6Dr7R5WZUUcrXrXnFznS8doUNeV_HwIf1fGwDnt4mhaqlJivKTLPk4rU8AWUzM_Dm_AY3FBnlEievauVCtxsQIJ4Hddd6dxSbHpVH8LTd8K-oLVNxu18oQVZW0soUiEvyjKsAkWEUQ7i7TfzxFreohCWtsd70FUQZNCrKU7XBbhvD0-wUXfx_-INj62SrKfcU?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7iC4n4q2hZVwtc3Bu8SwKHB5ahCSX32gk15ZirXVl7aX4EhguiBLI36Zi0tA6IzHep43EqPG6Av2bqPcC46bFtSayKhm0Ggu1Murhi5h8zLyxQC-ayg_tWbrcSGYJEZaTiUcsXLBnu-JTBsVM7t9IHsi6C0NDOIwjdFWj66KFUhdDcqve6UHbNdjGOcB0Pmga9OKcmnA_tkPbq4cVE6Q6U2Bcmrbb8ew6ta-JxNpCx7jg_EwSXmkHLx9Y?authuser=0&fife=s16383") },
+      { day: "第二天 京都🟡", name: "錦市場 京都", lat: 35.0049, lng: 135.7645, address: "日本〒604-8055 京都府京都市中京區 Higashiuoyacho", note: "(錦市場)在地人逛的海鮮市場", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6v2Ztsqloibj5Z9Fd5bXdHszNl3CDAETEDQ4keS6qzdc0FH7UWJdvaw_Bi_HnlmNGDO8QKUbNCDUvOk3tF_B2ANDyXYMfNFAbQWg5WhnI4s3kNNQG0JU6IuW_sf1L6CyGLn-RzMUeYrG97xS8kyFaFHj6sDYQKmbQ16payw4r8X5Hhj8vKujotfIs6DcZkEoM-uouM0doiIiJTKoQLGpc-Th4S1xgDmd46FfrqCmjBliAyUmJqAiXLP7E?authuser=0&fife=s16383") },
+      { day: "第二天 京都🟡", name: "大創 四條原店", lat: 35.0036, lng: 135.7648, address: "日本〒600-8005 Kyoto, Shimogyo Ward, Tachiuri Higashimachi, 12-1 ２階", note: "(大創)我也不知道 3分鐘介紹太多", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5qyulcG4r-D3Q4dCcbjdnkiba4UkulkP6a4z0hWwR8csge4jn933D47pbqLlxTj6Ub9zUMljXtGMh-U16yqxDO7AwFqnZLRaXIuFFlCExVidlt8JyjxI2OGtYwOL5OZOIHcjX9iswBeNE28ySQGCYghHOYTkpDboh7yf0MHElHpJ6Xb03s6DOyBK7GFGEky0KJIFQLS6iN5pGgidgDNu1c-wmQtyvNQn6fLkwhCepDuHBKfpsATNCf0jY?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7_8UTXkHqZnAKxAjitpBOs0RnyY07PHPMHrdj_VJixT0zxWE39YYgn6KaO6sDPomhyRCbv69IT3611WrE11dIRIr624r8ZGAvOx4PQz3DmsHDruOLcXE_Li509Lth_B9z_6qdKZWlym6VxHKLn-38V3eOyiVXksKRzH3WL62R5Jc-EyNfyfIPsCDFvLCIFFRR-Mdr6mX9LuIStWzpIeSdmX5FY-zxc2bwMphnZ4jLAsMNBb1bcTECFP60?authuser=0&fife=s16383") },
+      { day: "第二天 京都🟡", name: "大創 京都店 B1", lat: 35.0042, lng: 135.7675, address: "日本〒604-8046 Kyoto, Nakagyo Ward, Higashigawacho, ５３１番２ 地下１階", note: "B1 大創", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5iobs2otrD8HmRiZKa1wwO7UsCvT4n44XTe0_ERwYzKYv0Nhg637Pv8eHfx7FyuMwAwso4ngod3DYL8nFxcU8iev-z6wGEhuflo6xXyrF4SnubrZHjnIYArzcux4fRbzKUchD6zf8dg94X8-n3ODKOEUx_v4RCRFy9Z1N6KpnuAz_7kb0uM1y8s51Y6DJ1k5t6ThgokClSodpZA45I3f0nkKGMtHqkEeDCUzPLr8j-oNYvnV1Lxk58nOA?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7H-h_5UdqPNSQnZYdkbWeQHd8IL9XI69vSTu6RFbDnGYP27ERwbaLlCjqv5ZnDPkMmwl41lLqK4s_eXcEc2YBXhjuqjb01eU5Rej4RVG1LP4ejGJjWJUEIOq9q0vNeoCoCYvmcOfktc13agtdPyLYYeVlAKu83aDL3BYymKENzFkyVTFjCmj1sAcfDD-zYlWYsZUtT7SXlDucfz5SPNouS3gSZj4nCHRhhGpwONrRrC1m8LeT5oHLOr2A?authuser=0&fife=s16383") },
+      { day: "第二天 京都🟡", name: "蒙奇奇專專賣店 京都清水店", lat: 34.9961, lng: 135.7801, address: "京都府京都市東山区清水2丁目218-1", note: "京都清水寺附近", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6vApa6-cKSONquYnQM0HejwrfmfMpI5bKxzKfukGo-mNTfBLQSNRn0PRWJHB04G_SAQ18vptP7byHm_zazsjKp-LRmx3gyuFIpwdhd-rQkrwKph-WFI1q15vDFEPu7hu7pz_iYEPEwjeQRF_WGYqrrTs7RFyXQyA1pqxqzrpP2KWhaKlHnSMrNjQd8dKxdsbpVPqKP6wxBBtGKAkHXZ92uWBRQnTPXLfCtmZrB315dkBW22WpCVDi2XqU?authuser=0&fife=s16383") },
+      { day: "第二天 京都🟡", name: "第二天 夢京都", lat: 35.0003, lng: 135.7797, address: "日本〒605-0826 Kyoto, Higashiyama Ward, Masuyacho, 362-5 ますや 2F 着物レンタル 夢京都 高台寺店 着物レンタル)清水寺", note: "(夢京都)第二天 穿和服 預約10:30", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6y-xf3TvDWGQD0sTRtleEUqFuMdTpolTD1SZzsTgoSiYiWVMMx9X403CSi2N4w-3bjh2ybPEb9Pfi1CyYwAr9yFwcKC-CG8wV3RlWlWSA3J10RRDFuapeCr-AsHIPtY69fTwlZu0IDU2OW1Xw5SyhOTxLqe9bQFmikMrbLNdsNzUkkSlaLVrLKZ-6HMeQ4VmXt7Wcbsrsym8Lz13DZ_jQOWOX2gcg_tJKg-QTXKElUiauiLH7vemWu1aA?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5jAJslbR5abpk7OtIivXtd9J_ie-2NBFdPZMCHzv_d3fH8V-mm9ei2Y31XArQmAaetE9yJF3W0zr4DpizAEBlaosgXimxJaGzWLOBMoYDXkF673ltyYKO3pyN4Dkx3qNOmFap4S5qsI4xnvlHQcgSKWom3XOyycYrUxZDBhSxrzBt3ADuX6g5bFkuD2Fz19e0-1xBpsvxw4B2lDatafBa55MhOnUY4E5NPq6yO-M0jcNoSwFzImLiqeFQ?authuser=0&fife=s16383") },
+      { day: "第二天 京都🟡", name: "京都河原町(HK86)", lat: 35.0037751, lng: 135.7687658, address: "", note: "京都河原町站", price: "", routeLink: "", imgs: [] },
+      { day: "第二天 京都🟡", name: "淡路(HK63)", lat: 34.7394131, lng: 135.5168186, address: "", note: "淡路(HK63) 阪急京都線", price: "", routeLink: "", imgs: [] },
+      { day: "第二天 京都🟡", name: "御金神社", lat: 35.0118, lng: 135.7554, address: "京都府京都市中京區西洞院通御池上ル押西洞院町614", note: "金光閃閃洗錢神社", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7QswHstIcYNmAk0z8JCcO-hLpJQPIW220I6Ikt0Wb3Lp_k4HiexewE9q_-WLgSHLj2lrGqm-SiIGLxjWICaGq3DsiYjmUOKnI6b5U3YS-BKwZLYeuy1HRfcsBuSFhoz3DH0L3vIxI0XtPRBAUWRUK08bNG6jimJoS4H0-gq6UkoU4HmBJPgCsJnI0e_T09CJdj-WYWVQ-hqqLBn0Gg_ftht2irbEQhfet-Psd5igPOI8zZbBfUupUM3Cw?authuser=0&fife=s16383") },
+      { day: "第二天 京都🟡", name: "檀王法林寺", lat: 35.0094, lng: 135.7725, address: "京都府京都市左京區川端通3條上法林寺門前町36", note: "黑色招財貓神社", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4B4jbzl94eDU99OrP7wfKLMTXb6QO6acGFeeVHC88R9d_bi6_dF8OOQ4aC1rB81jQks1-RyigU8XVCg2CsnN1iOjkvNdgPhiGMUWiBBXf0WFuZgftaG7Kxdevg-twKY4JtR9pT4a-B3V4gRJS4PjqFp6y_TqgssiamI81La6gzEG73Q2ijxz4ue_qGQIIrRMRe1ybrjevLchWgxbhAydjgDUJl0pH02ArAYLSsIPhc-1bf1fsv7DZDkzk?authuser=0&fife=s16383") },
+      { day: "第二天 京都🟡", name: "回家點這", lat: 35.0005534, lng: 135.7613913, address: "", note: "回家點這 準特急", price: "700￥ 1小時22分", routeLink: "https://www.google.com/maps/dir/%E5%9B%9B%E6%A2%9D%E6%B2%B3%E5%8E%9F%E7%94%BA...", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4A-G4kA9rXG8N_9k1Lfr1RbW-31wFr7ugyqKX1zjgJNB-vNuY-ICCLf1Cum2JrbteLabUJxZ7jvN9t7i9dACjyra8Kz2zqIiP2LnYA86nEdYHyWixBAK_i8ErbDiYLg-monUxkmfu4aDY-GU5gKETbOqe46P3THyDHAwz975nbr26c-B2CF8aDvDJMc-Tdz5ECHZQdTsvvLipMJjpFG_cwThD2-rWG0X9TU6tPGEveqOMRDg-BepE1oek?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5qzOnKxusWRV83mnSKZzuVtvNZSLXgLCbaKsNj2QHucs09yXxLQb4vBCapRJrFrWQpsNGb_5HwQxdxwsu_Vk9qU8riCRd-QwHpdt9xeiDp7m5EWjvJ66btC_TI5y_vO5FS57vYSUaT3r2669vEiirpZqe_oMxvsjHmx55mGv5V3gP7Y3Rv7QQUettWuvC2vKc6gd8fCtvJNIzTulV5_ewnjGr-4E56XwXVg5c1lJu533zBlEv3W84wwt4?authuser=0&fife=s16383") },
+      { day: "第二天 京都🟡", name: "BEAMS JAPAN 京都", lat: 35.0083, lng: 135.7597, address: "京都府京都市中京區烏丸通阿屋小路馬之町586-2新風館1樓", note: "(BEAMS JAPAN )京都限定招財貓", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5up2UNHsNO3n3zu9CVEXCOpxGlUy_NPbgUzti2ZxoLXfMq9cYbQTCWp2gFhbfAi-ifpG5Cy_7FYw6_WN02wcw35-wgeySMkzMz4w2H7OsisrQGzezbM5Y0UQ_LYFFg2KbGCKCb5uNuCbRD2t5T9J6vL0brM2mAuUF6Y4dpmisEFrSnRqLiCtSPWX3gQGu4m6QAQFt0h_YJImg5eyFS0SWiTEyHKy_khNJtviAnuV3ZgmwyqPMNf7QKeo0?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7JeOHu4Yb5g3qAFHob4RrA4TEUlxC9GNtImutaP3gVRkMaIBh7n1bjGXgfpr8SGcmtgpY4XLHH76jSFQa95IO9gfGtSUhO46jvmxBvzqDQvcu7f6778SMHX7qRIbqGhOTnAmH121DBRUp6irsslnVxcDtJIbMlBpVBa6k4_TWuwFQZpZVHASHv8tR2PpuVfojTyaFcFl1eip_FdUBXvX7vmS90f5vmakJ64OV1db-bRgl4H_Dwb-oE-Jw?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR45XYmgl9pm70GIYWAK9EMyGkfNgyL6wE0Yb0SJYzyXq5afnedS25qgDR262Ut40qfDRGHdG9qyKEbhiv_JRg3saLYNtWKTM6bUPkF8WmjI5Jzz4g7EJk1IJdKl8_QR0jCclJThG5R7FhYxJhkU1kdCcDt65KzCr2eXpokAqJP18D8rFmE5Aah_g4Ld5M5bFzTY1pvGVacFjdqf5xOZ_fdv66Pfe-r3fSbQHFA8uVBtyzJjZQ6FIgFYva0?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6xpvkBIWXqfDFLgYJKaUiQB-kgUmE1d1Hhqiv6_pltGiWXft_dKHAEU3rOFnIF2p_dvBi2NCbyOsqwyPhJFd_4pmyyUuOq2KAForkkzeqDAb5rO9EvS7ms_XK2ngX2vwrinF1kq23chWhvQ9Xr1n2OsxgzTnFUfZ9YgmXlIwVwyUu5qSozv5F8XAhfr7k62cUSCp_0ooaYTNzR51CB2O22p4_lXOqMtzUfn0bSQukiVWXAnZa7nI2YWMU?authuser=0&fife=s16383") },
+
+      // 🟢 第一天 神戶
+      { day: "第一天 神戶🟢", name: "神戶臨海樂園", lat: 34.6795, lng: 135.1824, address: "1-chōme-7-2 Higashikawasakichō, Chuo Ward, Kobe, Hyogo 650-0044日本", note: "(神戶臨海樂園)大型購物商場 可看夜景", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7A66cFFxHiuJQi55OachW5B1d0Lr2W0l_fh9ttY7I1eVMs5RB7G7S2sxq5RMRIThuTd7N1Ka52qbnh6Ot1teieiU-Sfo13tr6QG2w1eQ8mw-YolVI62lLU5KBuCGfghYtvNyUEuhrLqQ7AcdnlPPAfpWRYsI02nwgB5bvATOI8sckeYt92D4x1tYx9QS1NWeuAZNOleEwlt-_TBHm1mT1kGUn2GSt6ZQtFllEugRv5jh0cgmXy3aYjSb4?authuser=0&fife=s16383") },
+      { day: "第一天 神戶🟢", name: "異人館", lat: 34.7011, lng: 135.1897, address: "兵庫縣神戶市中央區北野町3-10-20", note: "(異人館)萊茵之館免費開放", price: "", routeLink: "", imgs: [] },
+      { day: "第一天 神戶🟢", name: "天滿神社", lat: 34.7014, lng: 135.1887, address: "兵庫縣神戶市中央區北野町3-12-1", note: "(天滿神社)扇子神社", price: "", routeLink: "", imgs: [] },
+      { day: "第一天 神戶🟢", name: "神戶機場 (P09)", lat: 34.6372457, lng: 135.2289142, address: "〒650-0048 兵庫県神戸市中央区神戸空港1", note: "(神戶機場)前往第一航廈找到Port Liner車站\n三宮站是在2樓", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4aaueCuEOXlTTp3jgyGu2z5H0LoJuVP3nQFZFSIuKneZRsVGWddeND5E6x5L3lQcMnjQs3sHcGddXEA-0s0eVU9c7HboGhNh-sbE-oqDvhS7jiftKhRyYpUZw4_iDslHiIybymIu-v2gfF3cRdQv5lFIPuiTDdYX0Z96R_htN6x31ICoTYiaHMANZugzfhG3LHYY3ztR3nNKNZAwyv8jEFdrTs1TvX-meDMQwWOmJshB4q3KjYlJXJj18?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR46YGuIpSmitYQDL43InxvP8GjHbwEbLrcW_CcewHUR0nLbFhhkBrhepO8aqkQOLLk-OzdZq6UgKUc6Ay8kL93AsRZJfRLVp79EQIsCtNGlPtXaazY1Hbmc5i4X-03_bivLC7F1L45g4Ci_HcGGHMPVdgpj2nCPt0MS9iHO8evH_XzYJQMruvbFxM2P1nncvkOyVQn2FUxLr5TGOa2bQDEqZ9PhxC9ieS4DLC6UQflHv1bT4-ymwWXXg3w?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7xT_YJ82mMBTpfZ5oTcOO_HUcMai4kL4XK4WUWJkYB67EB9h2nm88qTVUCQfEKQ47CjCswDTwFVV438WzC8NIgZB6R18QAiO0UyY6sLHbbK1L_eQ6AqRxp6sFGn_4bg9vBAk3uz1o6_pwjNpZdd3jmIUekp6j1RmScC9eizm_cGFD6NOOl35IWQNrijIiF_y53bbqb3I_EQQ4MBkSMV1ls_QVDaKWSBcmImpFXiyDCRMtrhrap3JPP5yc?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6sjT1b-60agiPEaaK8rAGCdGzOxKSYxFEJ3CbgKPhZz-xnIn7PifhtF14RpfY0oe_8yYRa14qn1bU0mllo7XsQBIcEkFIzT5wmqlIPJfuqlSRL4ZiXgUG-5BCJg87-TFLxWCCYMxB9L87UrPoMx5ZODIieUfOF_VSasA67mCuMocr6dz2lJrOAF9ug-cxxgSojpAAa0bPb3tANEkGS0ZfMXe7jnUOn75LLnU8kONMCpZthpqZ74-TIc-E?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7epYNqZ-Cepo2i7BvBgnbJgBq8BaKolCsTwp8BZJ1FlPD7ZiwE-cS6dUlJWHvvxaYUMAfaTzBjP_IwoeTlT3vaCZJ4waiFI_FPqh0ZQ40USDEjFfwYezovmanKa9k4DVwsgx5k5PtuslHZXW5WuBtXXeEML7FmmbpskUbIeOesCfQoZo0M51fAFvYlw6KnODmnokgC5gwSPA3YEsxYfxXmlmspdJoWfcq_pwF89jIPO_WFAXOdvC060Kg?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4ho2aT_XaMdg2ODWZjiF7qD7xuqXuRE48e5xF0SHzErIU8j8e9L19qgQ51IOlC6zY_IaS5ZOFZuOLsPRmEB9CY7IxcjXeYa2uQ-znH_NPhZ1Ah1n3S0PyxWIA5B3NGIO1S-Wn-lQvdZKWZ9hWJO0uWmcLAdthNipD9TlLEcJNCxD4PEQkiSshLu_bGhf9Q4id88L2fq_ek-6egJkoS09E5CfecCysjJCBcpuW2KQnL9s-CeXBSro_ySwg?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR58JIjF4S5ZsdiRRQCv5borL-TfNsCIpeHSBtRH98LUAqIL_4Nta1c-WgNLd8xIPngSPWCaIV415iODpn6qdTmp1WiInHYYi8lzfFRd6yt7eCnsu-oiwa-XDdmZMk-Vk9I64mE0r1hTYK1Lzf81vDGhps9q9FLAO7Ct0hj4KSBFOI3gxRFspkpWBcuf6Dt8zYwLEONX2cztAJ7oTc_DcsUuRYwX3E1YCyaLL67784_mwNOKMD1DmtBIJEA?authuser=0&fife=s16383") },
+      { day: "第一天 神戶🟢", name: "三宮車站 (P01)", lat: 34.6945512, lng: 135.1952529, address: "", note: "(三宮Port Liner)神戶機場搭到這", price: "", routeLink: "", imgs: [] },
+      { day: "第一天 神戶🟢", name: "神戶三宮(HS32)", lat: 34.6938481, lng: 135.1960333, address: "", note: "神戶三宮(HS32) B2 2號奈良水藍色的「快速急行」終點站寫著「奈良 (Nara)」", price: "", routeLink: "", imgs: parseImages("https://www.youtube.com/embed/oxSdqRVScw4 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR42ON4cxeglrPMwn4K73pzmPo_Xg6szj5WS1v5YwGlEcVWkBeINTAoq7RxLEvywgg7EiZWQeF4BLbANE7zQ2oJyhMMOJet8a-VypQ4gcTGFZKNnS4sFSVgNVgIiW8HOruxPu_03yAgO-c351DIzbzDmf5RxzeAq8qI7NRKpprmIZHfrj7v_87YLA9IjJOvIaE9ecR5GzB8hUsoI68qEkWxqsBO-WhR5rjmNb4FfRv_gSkzopRZIWyBaBZ0?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6kP6iN9-2SaUaBO_GNUx-fAAvEufhG7HT7sipQWKKkoTlE43WFPpeXgwI2p-nGDG2JXDhw6OUOMilx_sBcYVjnUSGuvVfaP5G_6dMyuKPB5T9bPQmdnbPI61STte6RtK-BTVDRrtq_M9jUa8PGJ70RUegqXJXX4RlmluVRmADii3iN_0Hw0TxcXbmc5S_1TniwsLHIHaXSYYGbZB1lknGN7TV62cl7hgmjBLaK1QDYn1vtgZz25o3H97A?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5ddRFPL63wJEezGMiq6xYJWsWOA1eF7OQYJp-09QoAwTC1qIpln9j3yB8Lo9Q7eBNH6N8aUkRZ4DtTl4I4Lab4tj5VHyG8LDvb8f1GbhKnE1qGB2_J4b3CI9FNUPDk6FazzBToggN8zBtulJMFhI0s9qAA7Ovjytb6g35UiyNhkgOvkMN4AyF7yaqSW2Sp2_qkCqSSF3QajPEQWdloDsgp3SYy9pYjlDJSgoXT0IItTB1la8yibxADTBw?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR68-vQ1cRA3hKQIpmdMYnONDgkl6NtUEFryhYq-pTzf0D7L3pGB-OSzl31S0t6B1ckAo9ioLCxDwtLfot-p9RANsAY1KaUkJ94AHpLdCGTpnBB22HuACHsopX3MMwgfW3w_oaRZMn93OSnlVSg4qzjTXj5a7SvBLI6uXGawwRTrDT15KZIYbiCwqEam_QUVQCW0AVlAsVelbHoRvNiQJ9oUa8-eLSxQwJ9pAbvLD1p9FD3J_BSr2We_1F4?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6JSoO0UpUP4K1aCwKUAjTTHevftlZwVU7KlY8fzQv9YdXAyklznqombUr-uFuIS6sGOsC62a35sVrTmX8ddc2FCa5BHdMBl3LGmO3YGIcIMxuRzJSc5CuK-ilixLng1eqSDMDDd8P0FZmciVTq8-UBam-zBwwRHZhNyyOYupTZnG5gk8xMXUy6QuA7_UTzB1laueXQPcjsfQUecTVEWJ0mQcYc9bCWOdTTl7YfhdasX4LVfoqIa7L3QdA?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4uQ3A5kYZ0knnCecvPULmNiGWFCq5XLN3genwpUIfhMXaJ-Lu5hx3XVXd3CtU9hXheqJd1JpHS1wBOQwaTbOSbrqENmwxIuBP90b5u2TtW49S_1H2WaWlbdL8FTkOvsf3OGXuNguekACLM402yacuqaLBeOCcW9go5U6p0zmDgUTVhnCX5DK-bAlQ5xJyUJHqnftL6HStMp8-6ex0GboJZvX5ABKAgj6Xb2kDujtSVM9s2e1tgivgoIGI?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR74Xp15b2WxiQxN4fAPgxJa--4U47flCoHLVjuwu6h_oe0pkDV4GdTA9SxGi76Af-dRpP_IK-LoBob_4mSf-XJKcnvafuyrSUxv2aSTlxPrPrbubkPTu08IJWWIpI_xmEbRk1-f9J9F8Yw8ai0gIR_JqyD_lvZxj5Z3bHPeigMjpkXLcY0QzdPLR-VD1f5TMNfpvfnzQW80657uq0LcWitO4cFHUkR9AAKcoX0A0Nqt-apxDWHdzyGVdLI?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR746Uergb0zL-XulrDTfid_k4QeuXGGqcar2W1YBnV-JjFXPGpW6QXNOpNC2ZkSLIKzAtrOVd8OVdgHZOqDRsLs1osXCHdnZJVojSGKLDTsVeDNI2YCupFYg23UTxCnt62XoMQlsLFNi7ggeoDj-t1eaVt5vfOTc8syo7s3j6G0g8OTzz9xw0a21zXAoTvy7PUZ3XSo0yAoYv1kz5sQX9ZkD8lTVt0iND6pg08x3wFjfD76OV-xyzE14Iw?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6-q_6Jh8RJc3WyrwQttcxvr9yqaWiET54-NZBEluJ2Ci_jrcut0P59ZzhsbK5DFtm9nhOhGZyMaeU9ZUHieYgLelrx977UjAJQy5Ysi-dq8xB2pZQz4YDV0AaL81QWEojLOzxFxVwS-K847SUy6_m6Ms03he0gwWxzqme6tRxF6b0xqfefihbQAgTbj6sRQqCHwtTKczoy_eMHuq1fK8Yk3ncdyXxCWfdpn3Px6bHxkHMIpDgorLMFCkE?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4sWbB7qRTlhK62t0ilsmhu4TvOJIHFLS4pY5txl9I0eCPuCLxJPh8TSFZQoW3JNDv6gYMbxKwDQnxS6jy3HxU89zBzFSy3LDwpbX4jGytRO7gLBbKh1cZJ-QP1f5DQ4k6Brc0UlN-naPPI_r7rCEC1HLY9NcjmRUdTViFtQ4L3aSSCm_WMPBqKYENK1Cg7YjP4ns-YJIrHNtuapIfUAW2FpOpBygZc3OeqVkYE9glwW4i9ByZ_bGPrq6A?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4e0V2BAFMHGBOfDa3tCEVqz870w77rvdz-2QSQdHMMXONdgfdPP2Y1ryaaL5hqB6yB-vB5-I22-Ph-W267S4AqRqLmhrb9ntgAPLiEBo-RzEPaa0cdbqBOg7uDsWWhLxR4jtVGYixncS2jAO874pJ9T1XVb1aFnmHxCGPQ34XSLTk016nwMS_YSDgbyyZOlebu_8JFm-mxYOGOIzt5ajYN-mJUXenOSlL4EjANrp5_PI5GxBxWhYs6I4g?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7pdd6BMPUUOh1RHC-2fcdGrYTrJozxR1WOVEIdn3SnW_U_5ermL88GgIt0Pr_k0iUF01Fz6Hp345_QpJbOgVPYvSuGfEyYQ_jcfY0RtMpqOvU_-FqSGEWFUKcfSGWsokXA50ByR5LQdy5MKrKzosOnV0gws2dzJTM49_J5fN0I_iUOLUI7PYl1m1_im6oBzZD-Yig5cPrz4T9rVRiTS-LkHUmQGXzrTcZrJgISKEoypN1yMaM6exgkvTs?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6q7fflw5lmykBFqAcEaNSfDrgbk5SVrkkKKLEHDZzL-PdAL71w1LgASBMhx23aQECTblhegxwKJS6pWOX1aGhz9vJ1F5ZgEXnnj5CoRuYHjw-jFGefaMpq7hMqPhbEF0inxWVGjt2xyoBNTsFzxGlniquhwmCD_pkVUjT0a9MFSgcWM88tYdFK8OnxoDhgGp5i_yWK39k4V0nqEf7bPOVbAuzPvPg32sbGhYdqQGpErvVfL7Ad2I7GTTQ?authuser=0&fife=s16383") },
+      { day: "第一天 神戶🟢", name: "BEAMS JAPAN 神戶招財貓", lat: 34.6826, lng: 135.1867, address: "神戶市中央區波止場町5-5神戶港塔2F", note: "(BEAMS JAPAN)燈塔2樓 神戶限定招財貓", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5e48u8aBtAxXOtPCrkVwxG-u-UbewiaX9w-GM-jKUprEoCJjtSeKmyMf33NA-sBNpEAbs-maQpON1XXyob1ef-qhK6ip5fuDWEqP58rIM5B2o5MS7fXBwswPHfzEaBFLrFLNxmowGe8ki-jfn2bcR8imm8Mt77Wy0H6-dHlogRTDIKd-rlP8fDSADwR2DKiUVq3x62pVjejP8wOeRag4qD3FEnpgf1Cst2uqbhC5xM25R6rDvl7VY8YNE?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7Gy_2s9kOG2DjReMe4pT9ZblotgW9eTDflZIRJF3_T9iVo1k_ksfXsV_UK39ejcgpe4hPMWrTo4zDFK8Uv6Ux8H6wDH2ChKc6_VjwrtdnZwtecqjPc6mC0srrUjY8Oqe-axfJowCvnFKzDnxQZQEpnYatiEcp77gcajBv1PNXFLkXvy843vlAD98QBrdQKv8axyLXD4JhztzIHMq9gZlTiOUANWIhDSpHJOjyd7iYnFvKqIDCEKlf2D0E?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7bCOie1hwdIKdmwuGkLkSkdewdJuHWW4KDxk-TdeqmMw_GD7PLw_vTPUYu_kIckwCaang-0aWUIKNGwTM4wZsdsrfnnyjMKlTNrzLLnaf29Drv_HB2mashp4skiRznVeHee5Zd_nNNL7Rkl46p7fjZsAHi18jKwmZUL2Xda5OYOZVhzME0mENKpUr3c1muFVmXZrRmCIbz_qwF-46MIr3PPjuUDbMybavXWZK304hr1KbakhCwrtDMWy4?authuser=0&fife=s16383 https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4Md4xzkNcPIYqCSo71ukCFOAJHR8_jhPSlTekJLKTZIHYDtsHkoxBH-MC5q7knTidKgvSQma8_ytLlUVZGF9fQXQmPQ90xugDDBz8aVZm6JUJU0Zfg-JiE7KuBf7EdUmKo_6P609D0D5XLILyoXXiwzNZ7GRu0T4QWfLvm1dodDdAdbpK54jWjxGe-7zNxNbNYdAUYSoBv1U2wJftr8T9lCTDUsfQEso0N4zJNnF2VPVibqN-QHmdPwdE?authuser=0&fife=s16383") },
+      { day: "第一天 神戶🟢", name: "南京町 中華街", lat: 34.6881, lng: 135.1880, address: "1-chōme-3-18 Sakaemachidōri, Chuo Ward, Kobe, Hyogo 650-0023日本", note: "(南京町)商店街", price: "", routeLink: "", imgs: parseImages("https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5un_u_1se6_8iINQ1ViaxgC9ZGtyr6R2RMYlGdH3UJlEqfxNHMBfV1Rle6M3SqN49SzKegqQJwEuYPB7z2BwVYCT56o37o3JegYvR2NWpzJUbMZI9iGrfgOCQED8t3L_y8L_EWRGQvDxTt_eKf1YmYRCJWBC7G0uB2usPXKobq8k5suvjqWnzD_MRoRfo2jMOLISApKMlj3uHtTYr_QG3h7AsZ_zFGXbA2kWmMGK2dxb-1S4ndi6--m0w?authuser=0&fife=s16383") }
+    ];
+
+    let places = JSON.parse(localStorage.getItem('szuling_places_v4')) || rawData;
+    
+    // 確保每個景點都有 excluded 屬性
+    places.forEach(p => {
+        if (typeof p.excluded === 'undefined') p.excluded = false;
+        if (!p.imgs) p.imgs = [];
+        if (!p.customImgs) p.customImgs = [];
+    });
+
+    function syncToLocal() { localStorage.setItem('szuling_places_v4', JSON.stringify(places)); }
+
+    window.popupImageData = {}; 
+    window.changePopupImg = function(markerId, dir) {
+        let data = window.popupImageData[markerId];
+        if(!data || data.urls.length <= 1) return;
+        
+        data.currentIndex += dir;
+        if(data.currentIndex < 0) data.currentIndex = data.urls.length - 1;
+        if(data.currentIndex >= data.urls.length) data.currentIndex = 0;
+        
+        // ★ 切換圖片時加上繞過魔法 ★
+        document.getElementById(`gm-img-${markerId}`).src = getProxiedImageUrl(data.urls[data.currentIndex]);
+        document.getElementById(`gm-counter-${markerId}`).innerText = `${data.currentIndex + 1} (共 ${data.urls.length} 個)`;
+    };
+
     let map = L.map('map').setView([34.6723, 135.4983], 12);
-    L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-        maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '© Google'
-    }).addTo(map);
+    L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '© Google' }).addTo(map);
 
     let currentMarkers = [];
     let routeLayers = [];
     let currentOptimizedRoute = [];
     let routeRequestId = 0; 
 
-    // 彩蛋與字體
     const drawings = [
         { name: "蒙奇奇-頭", type: "poly", color: "#FFCC80", coords: "135.243445,34.5633668 135.2407413,34.5640029 135.2382952,34.5635788 135.2362781,34.5623772 135.2352482,34.5610343 135.2349907,34.5595853 135.235334,34.558525 135.2366215,34.5571466 135.2380806,34.5564044 135.2407414,34.5557329 135.2424151,34.5557329 135.2453333,34.553895 135.2475649,34.5529053 135.2521998,34.5523398 135.2563196,34.5521984 135.2606112,34.5529053 135.2630144,34.553895 135.265246,34.5554501 135.266276,34.5564397 135.2677351,34.5567932 135.2693659,34.5570759 135.270782,34.5579594 135.2721983,34.5593732 135.2723271,34.5603627 135.2721125,34.5613523 135.2710396,34.5628367 135.2692801,34.5636142 135.2669627,34.5638263 135.2645594,34.5635082 135.2624994,34.5654872 135.2611261,34.5664767 135.2590662,34.5674662 135.2564055,34.5682791 135.253101,34.5684558 135.2501398,34.5682084 135.2484232,34.5676783 135.2465778,34.5671129 135.2451616,34.56577 135.243445,34.5633668" },
         { name: "蒙奇奇-髮", type: "poly", color: "#177781", coords: "135.2349907,34.5618118 135.2381236,34.5612463 135.2404838,34.5618118 135.2422005,34.5613877 135.2451616,34.56577 135.2465778,34.5671129 135.2480799,34.5676076 135.2501398,34.5682084 135.253101,34.5684558 135.2564055,34.5682791 135.2596993,34.5671659 135.262124,34.5657611 135.2665764,34.5606809 135.269795,34.5609283 135.2712971,34.5620238 135.2728635,34.5636407 135.2727134,34.5664591 135.2719838,34.5684557 135.2709324,34.5703993 135.2698381,34.5719188 135.2681107,34.574419 135.2668554,34.5752935 135.2654606,34.5761945 135.2630788,34.5774489 135.2608793,34.5785001 135.2588998,34.5791317 135.2549034,34.5798693 135.2519315,34.5800107 135.2478009,34.5800283 135.2433538,34.5786327 135.2413354,34.5776522 135.2396603,34.5765302 135.2381463,34.5753111 135.2368897,34.573986 135.2359402,34.5720028 135.2350766,34.5698428 135.2344113,34.5673226 135.2342611,34.5642016 135.2349907,34.5618118" },
@@ -292,10 +313,7 @@
     ];
 
     drawings.forEach(d => {
-        let coordsArray = d.coords.split(' ').map(pair => {
-            let parts = pair.split(',');
-            return [parseFloat(parts[1]), parseFloat(parts[0])];
-        });
+        let coordsArray = d.coords.split(' ').map(pair => { let parts = pair.split(','); return [parseFloat(parts[1]), parseFloat(parts[0])]; });
         if(d.type === 'poly') L.polygon(coordsArray, {color: d.color, fillColor: d.color, fillOpacity: 0.6, weight: 2}).addTo(map).bindPopup(d.name);
         else L.polyline(coordsArray, {color: d.color, weight: 4}).addTo(map).bindPopup(d.name);
     });
@@ -317,24 +335,20 @@
         return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
-    // ★ 切換排除狀態 ★
     window.toggleExclude = function(actualIndex, event) {
         event.stopPropagation();
         places[actualIndex].excluded = !places[actualIndex].excluded;
         syncToLocal();
         
-        // 如果目前正在顯示路線，清除它，讓使用者重新點擊規劃
         if(currentOptimizedRoute.length > 0) {
             currentOptimizedRoute = [];
-            routeRequestId++; // 強制中斷舊的畫線
+            routeRequestId++; 
             document.getElementById('btn-nav').style.display = 'none';
         }
         
-        // 重新渲染清單與地圖
         let val = document.getElementById('day-select').value;
         let filtered = val === "All" ? places : places.filter(p => p.day === val);
         
-        // 更新起點選單(過濾掉被排除的)
         if (val !== "All") {
             const startSelect = document.getElementById('start-select');
             let currentVal = startSelect.value;
@@ -345,9 +359,7 @@
                 opt.textContent = p.name;
                 startSelect.appendChild(opt);
             });
-            if (startSelect.querySelector(`option[value="${currentVal}"]`)) {
-                startSelect.value = currentVal;
-            }
+            if (startSelect.querySelector(`option[value="${currentVal}"]`)) startSelect.value = currentVal;
         }
         
         renderList(filtered, false);
@@ -365,7 +377,10 @@
             el.style.borderLeftColor = getMarkerColor(p.day);
             
             let titlePrefix = isRouted ? `<span class="badge bg-secondary me-1">${displayIndex + 1}</span>` : "";
+            
             let displayImgs = p.customImgs && p.customImgs.length > 0 ? p.customImgs : p.imgs;
+            
+            // ★ 側邊欄圖片防盜鏈處理 ★
             let firstImgUrl = displayImgs.length > 0 ? getProxiedImageUrl(displayImgs[0]) : "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
             
             el.innerHTML = `
@@ -375,7 +390,7 @@
                     </div>
                     <div class="p-2 pe-4 flex-grow-1">
                         <div class="place-title text-truncate">${titlePrefix}${p.name}</div>
-                        <div class="text-muted" style="font-size:0.85rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">📍 ${p.note || '無備註'}</div>
+                        <div class="text-muted" style="font-size:0.85rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">📍 ${p.address || p.note || '無備註'}</div>
                     </div>
                 </div>
                 <div class="card-actions">
@@ -407,38 +422,40 @@
         let bounds = [];
         displayPlaces.forEach((p, index) => {
             let color = getMarkerColor(p.day);
-            let number = isRouted ? (index + 1) : "📍";
+            let number = isRouted ? (index + 1) : '<i class="bi bi-geo-alt-fill"></i>';
             
             let displayImgs = p.customImgs && p.customImgs.length > 0 ? p.customImgs : p.imgs;
-            if(displayImgs.length === 0) displayImgs = [""];
+            
+            let markerId = `m_${index}`;
+            // 存入全域供點擊切換使用（存入原始網址即可，切換時會 proxy）
+            window.popupImageData[markerId] = { urls: displayImgs.length > 0 ? displayImgs : ["https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"], currentIndex: 0 };
 
             let iconHtml = `<div class="marker-circle ${p.excluded ? 'marker-excluded' : ''}" style="background-color: ${color};">${number}</div>`;
-            let icon = L.divIcon({
-                className: 'custom-icon',
-                html: iconHtml,
-                iconSize: [26, 26],
-                iconAnchor: [13, 13],
-                popupAnchor: [0, -13]
-            });
+            let icon = L.divIcon({ className: 'custom-icon', html: iconHtml, iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -13] });
 
-            // ★ 支援多圖水平滑動的卡片設計 ★
-            let imagesHtml = displayImgs.map(url => `
-                <div class="gm-popup-img-item">
-                    <img src="${getProxiedImageUrl(url)}" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'">
+            let controlsHtml = displayImgs.length > 1 ? `
+                <div class="gm-img-controls">
+                    <span class="gm-ctrl-btn" onclick="changePopupImg('${markerId}', -1)">&lt;</span>
+                    <span id="gm-counter-${markerId}">1 (共 ${displayImgs.length} 個)</span>
+                    <span class="gm-ctrl-btn" onclick="changePopupImg('${markerId}', 1)">&gt;</span>
                 </div>
-            `).join('');
-            
-            let swipeHint = displayImgs.length > 1 
-                ? `<div style="text-align:center; font-size:11px; color:#ccc; background:#000; padding:2px 0;">👈 滑動查看共 ${displayImgs.length} 張照片 👉</div>` 
-                : '';
+            ` : '';
+
+            // ★ 地圖相簿防盜鏈處理 ★
+            let initialImgSrc = displayImgs.length > 0 ? getProxiedImageUrl(displayImgs[0]) : "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
 
             let popupHtml = `
-                <div class="gm-popup-img-box">${imagesHtml}</div>
-                ${swipeHint}
-                <div class="gm-popup-info">
-                    <div class="gm-popup-title">${p.name} ${p.excluded ? '<span class="badge bg-secondary ms-1">已排除</span>' : ''}</div>
-                    <div class="gm-popup-note">${p.note || '無備註'}</div>
+                <div class="gm-popup-header">${p.name}</div>
+                <div class="gm-img-wrapper">
+                    <img id="gm-img-${markerId}" src="${initialImgSrc}" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'">
+                    ${controlsHtml}
                 </div>
+                <table class="gm-info-table">
+                    <tr><td>詳細地址</td><td>${p.address || '沒有值'}</td></tr>
+                    <tr><td>備註</td><td>${p.note || '沒有值'}</td></tr>
+                    <tr><td>票價&時程</td><td>${p.price || '沒有值'}</td></tr>
+                    <tr><td>規劃路線</td><td>${p.routeLink ? `<a href="${p.routeLink}" target="_blank">點此查看</a>` : '沒有值'}</td></tr>
+                </table>
             `;
 
             let marker = L.marker([p.lat, p.lng], {icon: icon}).addTo(map);
@@ -454,47 +471,51 @@
         document.getElementById('route-warning').style.display = 'none';
         
         let hasError = false;
-        let chunkSize = 15; 
-        let waypoints = points.map(p => `${p.lng},${p.lat}`);
+        let hasLongDistance = false;
         
-        for (let i = 0; i < waypoints.length - 1; i += (chunkSize - 1)) {
+        for (let i = 0; i < points.length - 1; i++) {
             if (reqId !== routeRequestId) break;
 
-            let chunk = waypoints.slice(i, i + chunkSize);
-            let coords = chunk.join(';');
+            let p1 = points[i];
+            let p2 = points[i+1];
+            let dist = getDistance(p1.lat, p1.lng, p2.lat, p2.lng);
+
+            if (dist > 3) {
+                drawFallbackLine([p1, p2]);
+                hasLongDistance = true;
+                continue;
+            }
             
             try {
-                let res = await fetch(`https://router.project-osrm.org/route/v1/foot/${coords}?overview=full&geometries=geojson`);
+                let res = await fetch(`https://router.project-osrm.org/route/v1/foot/${p1.lng},${p1.lat};${p2.lng},${p2.lat}?overview=full&geometries=geojson`);
                 let data = await res.json();
                 
                 if (reqId !== routeRequestId) break;
                 
                 if (data.code === 'Ok') {
                     let routeGeoJSON = data.routes[0].geometry;
-                    let layer = L.geoJSON(routeGeoJSON, {
-                        style: { color: '#0d6efd', weight: 6, opacity: 0.8 }
-                    }).addTo(map);
+                    let layer = L.geoJSON(routeGeoJSON, { style: { color: '#0d6efd', weight: 5, opacity: 0.8 } }).addTo(map);
                     routeLayers.push(layer);
                 } else {
-                    drawFallbackLine(points.slice(i, i + chunkSize));
+                    drawFallbackLine([p1, p2]);
                     hasError = true;
                 }
             } catch (err) {
                 if (reqId !== routeRequestId) break;
-                drawFallbackLine(points.slice(i, i + chunkSize));
+                drawFallbackLine([p1, p2]);
                 hasError = true;
             }
         }
         
         if (reqId === routeRequestId) {
             document.getElementById('loader').style.display = 'none';
-            if (hasError) document.getElementById('route-warning').style.display = 'block';
+            if (hasError || hasLongDistance) document.getElementById('route-warning').style.display = 'block';
         }
     }
 
     function drawFallbackLine(pointsChunk) {
         let latlngs = pointsChunk.map(p => [p.lat, p.lng]);
-        let line = L.polyline(latlngs, {color: '#dc3545', weight: 5, dashArray: '10, 10', opacity: 0.8}).addTo(map);
+        let line = L.polyline(latlngs, {color: '#fd7e14', weight: 4, dashArray: '8, 8', opacity: 0.9}).addTo(map);
         routeLayers.push(line);
     }
 
@@ -528,7 +549,6 @@
         } else {
             let filtered = places.filter(p => p.day === val);
             startSelect.innerHTML = "";
-            // 下拉選單只顯示未排除的景點
             filtered.filter(p => !p.excluded).forEach(p => {
                 let opt = document.createElement('option');
                 opt.value = p.name;
@@ -541,7 +561,6 @@
         }
     });
 
-    // ★ 變更：Open TSP 開放式路線演算 (徹底解決終點交叉問題) ★
     document.getElementById('btn-route').addEventListener('click', async () => {
         routeRequestId++;
         const currentReqId = routeRequestId;
@@ -549,7 +568,6 @@
         const val = document.getElementById('day-select').value;
         const startName = document.getElementById('start-select').value;
         
-        // 排除掉不參與規劃的景點
         let currentPlaces = places.filter(p => p.day === val && !p.excluded);
         if(currentPlaces.length < 2) return alert("可規劃的景點數量少於2個！");
 
@@ -558,7 +576,7 @@
         let current = unvisited.splice(startIndex, 1)[0]; 
         let route = [current];
 
-        // 階段一：最近鄰居法 (Nearest Neighbor)
+        // 階段一：最近鄰居法
         while(unvisited.length > 0) {
             let nearestIdx = -1;
             let minDist = Infinity;
@@ -570,14 +588,13 @@
             route.push(current);
         }
 
-        // 階段二：端點自由的 2-Opt 最佳化演算法 (解開死結)
+        // 階段二：端點自由的 2-Opt (解開交叉死結)
         let improved = true;
         while(improved) {
             improved = false;
             for (let i = 1; i < route.length - 1; i++) {
                 for (let j = i + 1; j < route.length; j++) {
                     if (j === route.length - 1) {
-                        // 當涉及終點時，允許路線任意更換終止點
                         let d1 = getDistance(route[i-1].lat, route[i-1].lng, route[i].lat, route[i].lng);
                         let d2 = getDistance(route[i-1].lat, route[i-1].lng, route[j].lat, route[j].lng);
                         if (d2 < d1) {
@@ -586,11 +603,8 @@
                             improved = true;
                         }
                     } else {
-                        // 處理一般中段路線的交叉
-                        let d1 = getDistance(route[i-1].lat, route[i-1].lng, route[i].lat, route[i].lng)
-                               + getDistance(route[j].lat, route[j].lng, route[j+1].lat, route[j+1].lng);
-                        let d2 = getDistance(route[i-1].lat, route[i-1].lng, route[j].lat, route[j].lng)
-                               + getDistance(route[i].lat, route[i].lng, route[j+1].lat, route[j+1].lng);
+                        let d1 = getDistance(route[i-1].lat, route[i-1].lng, route[i].lat, route[i].lng) + getDistance(route[j].lat, route[j].lng, route[j+1].lat, route[j+1].lng);
+                        let d2 = getDistance(route[i-1].lat, route[i-1].lng, route[j].lat, route[j].lng) + getDistance(route[i].lat, route[i].lng, route[j+1].lat, route[j+1].lng);
                         if (d2 < d1) {
                             let reversed = route.slice(i, j + 1).reverse();
                             route.splice(i, reversed.length, ...reversed);
@@ -619,7 +633,7 @@
         let origin = `${currentOptimizedRoute[0].lat},${currentOptimizedRoute[0].lng}`;
         let dest = `${currentOptimizedRoute[currentOptimizedRoute.length-1].lat},${currentOptimizedRoute[currentOptimizedRoute.length-1].lng}`;
         
-        let url = `https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=${origin}&destination=${dest}`;
+        let url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=${origin}&destination=${dest}`;
         
         if (currentOptimizedRoute.length > 2) {
             let waypoints = currentOptimizedRoute.slice(1, -1).slice(0, 9).map(p => `${p.lat},${p.lng}`).join('|');
@@ -628,7 +642,7 @@
         window.open(url, '_blank');
     });
 
-    // 編輯功能 (支援多圖片上傳)
+    // 編輯功能
     let editModal = new bootstrap.Modal(document.getElementById('editModal'));
     let pendingImages = [];
     
@@ -649,6 +663,7 @@
         if (displayImgs.length > 0) {
             displayImgs.forEach(url => {
                 let imgEl = document.createElement('img');
+                // ★ 編輯視窗防盜鏈處理 ★
                 imgEl.src = getProxiedImageUrl(url);
                 imgEl.style.cssText = "max-height: 120px; border-radius: 6px; margin-right: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);";
                 previewContainer.appendChild(imgEl);
@@ -657,7 +672,6 @@
         } else {
             previewContainer.style.display = 'none';
         }
-
         editModal.show();
     }
 
@@ -679,7 +693,7 @@
                 let img = new Image();
                 img.onload = function() {
                     let canvas = document.createElement('canvas');
-                    let maxWidth = 400; 
+                    let maxWidth = 600; 
                     let scale = Math.min(1, maxWidth / img.width);
                     canvas.width = img.width * scale;
                     canvas.height = img.height * scale;
@@ -705,9 +719,7 @@
         let newNote = document.getElementById('edit-note').value;
         
         places[index].note = newNote;
-        if (pendingImages.length > 0) {
-            places[index].customImgs = pendingImages; 
-        }
+        if (pendingImages.length > 0) places[index].customImgs = pendingImages; 
         
         syncToLocal();
         editModal.hide();
@@ -715,7 +727,6 @@
         let val = document.getElementById('day-select').value;
         let filtered = val === "All" ? places : places.filter(p => p.day === val);
         
-        // 若有正在規劃的路線，會直接清除路線並顯示新狀態 (避免資料錯亂)
         if(currentOptimizedRoute.length > 0) {
             currentOptimizedRoute = [];
             routeRequestId++; 
@@ -727,7 +738,6 @@
         renderMap(filtered, false);
     }
 
-    // 初始載入
     renderList(places, false);
     renderMap(places, false);
     map.setView([34.63, 135.40], 10); 
