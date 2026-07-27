@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer" />
-    <title>關西之旅</title>
+    <title>偲菱的關西之旅 - 終極突破版</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -29,27 +28,54 @@
         #map { flex-grow: 1; height: 55vh; z-index: 1; }
         @media (min-width: 768px) { #map { height: 100vh; } }
         
+        /* 側邊欄卡片樣式 */
         .place-card { 
             background: #fff; margin-bottom: 12px; border-radius: 10px; border: 1px solid #e9ecef; 
-            border-left: 6px solid #ccc; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.04); 
+            border-left: 6px solid #ccc; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.04); 
             overflow: hidden; position: relative;
         }
         .place-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .place-card.is-excluded { opacity: 0.5; filter: grayscale(80%); border-left-color: #adb5bd !important; }
         
         .card-img-container { width: 110px; height: 100px; flex-shrink: 0; background: #f1f3f5; display: flex; align-items: center; justify-content: center; border-right: 1px solid #eee; }
         .card-img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .place-title { font-weight: bold; font-size: 1.05rem; color: #333; margin-bottom: 4px; padding-right: 35px;}
         
-        .place-title { font-weight: bold; font-size: 1.05rem; color: #333; margin-bottom: 4px; padding-right: 25px;}
-        .custom-icon { background: none; border: none; }
-        
+        /* 側邊欄操作按鈕 */
+        .card-actions { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .action-btn { font-size: 1.2rem; cursor: pointer; padding: 2px 5px; transition: transform 0.2s; border-radius: 4px; background: rgba(255,255,255,0.8); }
+        .action-btn:hover { transform: scale(1.15); }
+
         .control-panel { margin-bottom: 15px; position: sticky; top: 0; background: white; padding-bottom: 10px; z-index: 10; border-bottom: 1px solid #eee;}
-        
-        .btn-edit { position: absolute; right: 10px; top: 10px; font-size: 1.2rem; color: #adb5bd; cursor: pointer; padding: 5px; transition: color 0.2s; }
-        .btn-edit:hover { color: #0d6efd; }
 
         #loader { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); padding: 15px 30px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 2000; font-weight: bold; color: #0d6efd; border: 1px solid #cce5ff;}
-        
         .leaflet-routing-container { display: none !important; }
+
+        /* 地圖乾淨的小圓點標記 */
+        .custom-icon { background: none; border: none; }
+        .marker-circle {
+            width: 26px; height: 26px; border-radius: 50%; border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4); display: flex; align-items: center;
+            justify-content: center; color: white; font-weight: bold; font-size: 12px;
+            transition: transform 0.2s;
+        }
+        .marker-circle.marker-excluded { background-color: #adb5bd !important; color: #fff; }
+        .marker-circle:hover { transform: scale(1.2); z-index: 1000 !important; }
+
+        /* 支援多圖左右滑動的彈出卡片 */
+        .leaflet-popup-content-wrapper { border-radius: 8px; padding: 0; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
+        .leaflet-popup-content { margin: 0; width: 280px !important;}
+        .gm-popup-img-box {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory; 
+            height: 180px; background-color: #000; scrollbar-width: none; /* Firefox */
+        }
+        .gm-popup-img-box::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+        .gm-popup-img-item { flex: 0 0 100%; scroll-snap-align: center; display: flex; align-items: center; justify-content: center; }
+        .gm-popup-img-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .gm-popup-info { padding: 12px 15px 15px 15px; }
+        .gm-popup-title { font-size: 16px; font-weight: bold; color: #202124; margin-bottom: 8px; }
+        .gm-popup-note { font-size: 13px; color: #5f6368; line-height: 1.5; white-space: pre-wrap; margin: 0;}
+        .leaflet-popup-close-button { color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8); right: 5px !important; top: 5px !important; font-size: 20px !important;}
     </style>
 </head>
 <body>
@@ -57,7 +83,7 @@
 <div id="app">
     <!-- 左側面板 -->
     <div id="sidebar">
-        <h4 class="mb-3 text-dark fw-bold">🗺️ 關西之旅</h4>
+        <h4 class="mb-3 text-dark fw-bold">🗺️ 偲菱的關西之旅</h4>
         <div class="control-panel">
             <label class="form-label mb-1 text-secondary fw-bold" style="font-size: 0.85rem;">1. 選擇旅遊區域：</label>
             <select id="day-select" class="form-select mb-3 shadow-sm border-primary">
@@ -65,15 +91,15 @@
             </select>
             
             <div id="start-panel" style="display: none;">
-                <label class="form-label mb-1 text-secondary fw-bold" style="font-size: 0.85rem;">2. 選擇你要從哪裡開始：</label>
+                <label class="form-label mb-1 text-secondary fw-bold" style="font-size: 0.85rem;">2. 選擇你要從哪裡開始 (已過濾排除景點)：</label>
                 <select id="start-select" class="form-select mb-3 shadow-sm border-primary"></select>
                 
-                <button id="btn-route" class="btn btn-primary w-100 mb-2 fw-bold shadow-sm py-2">🚶 自動規劃走路路線</button>
+                <button id="btn-route" class="btn btn-primary w-100 mb-2 fw-bold shadow-sm py-2">🚶 自動規劃走路路線 (不含排除)</button>
                 <button id="btn-nav" class="btn btn-success w-100 fw-bold shadow-sm py-2" style="display: none;">📱 傳送至 Google Maps 導航</button>
             </div>
             
             <div id="route-warning" class="text-danger mt-2" style="font-size: 0.8rem; display:none; background: #fff3f3; padding: 8px; border-radius: 5px; border: 1px solid #ffc107;">
-                ⚠️ 提示：部分景點跨距過遠，系統已為該段路自動轉為虛線連接。
+                ⚠️ 提示：部分景點跨距過遠，系統已自動轉為虛線連接。
             </div>
         </div>
         <div id="place-list" class="pb-4"></div>
@@ -81,15 +107,15 @@
 
     <!-- 右側地圖 -->
     <div id="map"></div>
-    <div id="loader"><i class="bi bi-arrow-repeat spin"></i> 努力畫出真實街道中，請稍候...</div>
+    <div id="loader"><i class="bi bi-arrow-repeat spin"></i> 努力畫出最順街道中...</div>
 </div>
 
-<!-- 編輯視窗 Modal -->
+<!-- 編輯視窗 Modal (支援多圖預覽) -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-light">
-        <h5 class="modal-title fw-bold text-primary"><i class="bi bi-pencil-square"></i> 自訂景點資訊</h5>
+        <h5 class="modal-title fw-bold text-primary"><i class="bi bi-images"></i> 編輯景點與圖片</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -99,14 +125,14 @@
             <input type="text" class="form-control bg-white" id="edit-name" disabled>
         </div>
         <div class="mb-3">
-            <label class="form-label fw-bold text-secondary">我的備註 (可自行修改)</label>
+            <label class="form-label fw-bold text-secondary">我的備註</label>
             <textarea class="form-control border-primary" id="edit-note" rows="3"></textarea>
         </div>
         <div class="mb-3">
-            <label class="form-label fw-bold text-secondary">上傳我的照片 (支援相機/相簿)</label>
-            <input class="form-control" type="file" id="edit-image" accept="image/*">
-            <div id="preview-container" class="mt-3 text-center" style="display:none; background: #f8f9fa; padding: 10px; border-radius: 8px;">
-                <img id="edit-preview" style="max-width: 100%; max-height: 180px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <label class="form-label fw-bold text-secondary">上傳照片 (可複選多張)</label>
+            <input class="form-control" type="file" id="edit-image" accept="image/*" multiple>
+            <div id="preview-container" class="mt-3" style="display:none; background: #f8f9fa; padding: 10px; border-radius: 8px; overflow-x: auto; white-space: nowrap;">
+                <!-- 預覽圖片放這裡 -->
             </div>
         </div>
       </div>
@@ -120,12 +146,10 @@
 
 <!-- Scripts -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- 引入 Routing Machine 負責真實街道 -->
-<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // 完整 82 個景點資料庫 (包含圖片、註解、座標)
+    // 預設資料
     const defaultPlaces = [
       { day: "大阪旅遊🔵", name: "HOKA 心齋橋旗艦店", lat: 34.6766, lng: 135.5015, img: "https://img.youtube.com/vi/_CTSpkCAW48/hqdefault.jpg", note: "(HOKA)買鞋子 日本最大旗艦店" },
       { day: "大阪旅遊🔵", name: "Seria 長堀店(心齋橋)", lat: 34.6748, lng: 135.4998, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5OaI4xRgbRvtBVOWVEmrUVBHnc-QNgCpoHcMsqnTYtzPcdbO5ztq4O80nZAgy5SUBk9C4K8-iuI802gOjpNL3SFMNH8qVcRLM2meIZG1SdofqiA9oiAQum7cY5vgKhZxyUnblMBWtXDWKegHqIuy6ykCwdiEGWNqbRay1j1DWtwOvgmsUzI-YC-7ZsxIWJFPsJ82-QwnbrcxfxwV6kgO1anJGkIjPs6bcK_dMmEiMbORlOXI2tB-lPBzU?authuser=0&fife=s16383", note: "(Seria)類似大創的百元平價超市" },
@@ -172,7 +196,7 @@
       { day: "大阪旅遊🔵", name: "AKICHI", lat: 34.6608, lng: 135.5002, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7QIJktlrISgVvMTzVKXFIcs-17cdd6GR3y-2HcDE-XQsAYTM2CCCPvq4rD5Mq75i1NquE0PZ_1UqHRKbEHTfnuxsJY1mmX8U1fZeKf2C0CVQ73S12OUMeH31-TE8Lrlfr9IxFFWadyMB1L2EncSvVvZdRWX1Et4YYhwO7Y0-Fqadf-YgYW4ZI8XkQ_Sf1IASZYaVxAuutouW55_Df5PpUIiOtyi5_NmK5yXzLoOHN5P97HCSQPKMmTYfQ?authuser=0&fife=s16383", note: "杜拜巧克力Q餅加可麗餅" },
       { day: "大阪旅遊🔵", name: "麵包小偷快閃", lat: 34.6465, lng: 135.5135, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR72aLKu-pJKhKEuasY1x66LOV3xnrP-ncX1JnX6YeLFNSblbJa769rahBdtaDhVAvxmuQlnKSmuH5P33TnjcluMZZZLHOK4sUmRwoygWzMBpmQlN7YJod18-TT0YDAX1U_lyad5e-AtB8we__w3Mp-D97fjm3MnzO_ZiD409EUpWcyS_zAzwBopx6yMZ9BbaJ6gasNWIaMRkFdAAImjcUzNmxO9-s5uGJZH-Ho6z_v8AQjgtqEjtCviw4A?authuser=0&fife=s16383", note: "阿倍野 Q's Mall 1樓" },
 
-      // 梅田 (8個)
+      // 梅田
       { day: "梅田", name: "天神橋筋漢堡排", lat: 34.7001, lng: 135.5118, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6lA1Gsyo_-XgHg96xgQnOjVhqdD2VVmvf0M2mCPQMYllpasiz0vCR9KRfbSSjR_-cKgaqDTF9muny2mh5E-iobnzmQnSQk0P1iRJomP6OCUW_aeT1Qm1JaCdpaKQ20HBjz9qWVEneTfBrUuVONuoGVFbPpsK97sEIf_gijp1sR9gNT26ngVZKOf9aKnJZTeYElDZuGQYeFfPY1tBRBr9xKvweXV9nPoxZ3HzcrGbVp856NkkkAKTwUWCY?authuser=0&fife=s16383", note: "(ニクサングルマン)多汁漢堡排超推！" },
       { day: "梅田", name: "東洋亭 阪急梅田店", lat: 34.7032, lng: 135.4984, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4tZVLvN8KU8Xy1E9x2wQ4MQhqhG7aZ28g_YOYMyZ8tPzFCoqruzSGJwn055coXbVsHCz4VPN5rjpyG-j2DL1CWCq4oKXhifm0Jf8My-P6HuTYj7pKDkMLdRbvAhzsA_8KQrMO-XEhtwwTRBQZMZKCa9OhDHl6yWFKBL4MRYrw3voJbScaDVz17kxOOu84W48NgWVToaL6t-MbZH4t5Le0pFGAVn70nmh8KR5n51cd3OdxR5cMtfqbZCno?authuser=0&fife=s16383", note: "招牌漢堡排必吃" },
       { day: "梅田", name: "成城石井 阪急三番街店", lat: 34.7058, lng: 135.4981, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR50rNykEG1WZhDRprJUIHDCfs-Z21HiubnbFlBWpDt9KQo0bXW0pXKorPyaGBVULTwO_7xgSkNqomkXxxaWRFbvkFOYXKTqY3DW0sLdLHd1zTobct388gNwt_3FFGsHA7r37AmJq5xuwkFJS8_6UCYRnX8D4yohvd2YldXr3Bg0vde8xw2rCgE5J_aNylBpLbqoibdqQ6FE2Sur9ZOESHVILoOUFQkYEottXyxsUcYlT0w3xZWd4ec85Dc?authuser=0&fife=s16383", note: "找大谷翔平愛吃的優格" },
@@ -182,7 +206,7 @@
       { day: "梅田", name: "BRAIN SLEEP 梅田店", lat: 34.7013, lng: 135.4975, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4JfFOVh052nfBGzCIspmQ7ArBRzZQmRxIR78yD_XbHrbX5ZUWLzieAkE2QtGcsiuf2T6iOQDeqH5S7gHEyGYPKz-XLUIR7rgatlp_206fBO4-lKxBc6UHDiOSO34oJpXVOZeWCXelryonuobtoAYzIoLW2yyqDPUACoBWHPrSjEkY6HaIJTlfOGIMY_Y0VZmlanKiHpsS4frTnOGa5QKCgplLVo3VziEIdUklWqUVdrU-ioj1Fz_iZ-Ws?authuser=0&fife=s16383", note: "止鼾枕頭" },
       { day: "梅田", name: "3 coin plus+梅田", lat: 34.7029, lng: 135.4952, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7Cl5bcnaEQu8qybzfy4RPDdolO-Gg_D9NEZxuNV1qmXRJKnA5fJsdPnO_sWm1oJ72E4wJ_cW8HD8KolWsiGq6armN3zJFWxaMB9KtwRqy8Fv3xLisPjIHDhKd9iA8gz5d8sSqBKfCcsKtA54ixgn0ob7DolYB6pmN9ZquuxGhhPAKlZlwswryrr9nSUTG77OmpKIs2gnm2vcX-Im8M8omvQFUaI3Q_CbtzgyZVIeDMVqU1R3yUl6HsagU?authuser=0&fife=s16383", note: "蛋蛋器" },
 
-      // 奈良🔴 (13個包含車站與轉換點)
+      // 奈良🔴
       { day: "第四天 奈良🔴", name: "東大寺 南大門", lat: 34.6865, lng: 135.8398, img: "", note: "上次我們逛到這" },
       { day: "第四天 奈良🔴", name: "日本橋站(K17)", lat: 34.667142, lng: 135.506104, img: "", note: "近鐵往奈良：近鐵奈良線" },
       { day: "第四天 奈良🔴", name: "天下茶屋站(K20)", lat: 34.637181, lng: 135.496803, img: "", note: "往奈良：堺筋線接日本橋" },
@@ -197,12 +221,12 @@
       { day: "第四天 奈良🔴", name: "奈良到弁天町", lat: 34.670453, lng: 135.459878, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6JaZ9Kt4aSjVm2KTa2iZiZJnqzGGAdP3pUaKsIv62LLdHHxluwbh_Joeov7LMhDq9QQYwvVcvnPtO9fcDVPTFyX5WS94Mg9M-5ydHl6THrgogC2aMakE9d9ki-RozO_P9cu0oA36BiiR3-jHcDikj610ClocdDm58imbgTXVuCGAUBTuUulx_nb8IogdFQESENaHHQ5L79Sc6TyQJIQv6DclCmbnyBdvOClV2x5LID--7zgtCkOG2107Y?authuser=0&fife=s16383", note: "票價750￥ 54分" },
       { day: "第四天 奈良🔴", name: "奈良市", lat: 34.692436, lng: 135.604989, img: "", note: "奈良" },
 
-      // 環球影城🟣 (3個)
+      // 環球影城🟣
       { day: "第三天 環球影城🟣", name: "環球", lat: 34.649266, lng: 135.452421, img: "", note: "環球區域" },
       { day: "第三天 環球影城🟣", name: "第三天 環球影城", lat: 34.6654, lng: 135.4323, img: "", note: "第三天環球 小小兵 哈利波特" },
       { day: "第三天 環球影城🟣", name: "往大阪環球影城 計程車", lat: 34.640116, lng: 135.498109, img: "", note: "票價5500-6000￥ 24分" },
 
-      // 京都🟡 (14個)
+      // 京都🟡
       { day: "第二天 京都🟡", name: "唐吉訶德 京都店", lat: 34.9875, lng: 135.7594, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR44FYve52hsIcpmo-wQj4bG5VSZzzuKDOSel0o7wPrGEuDH17H_1RllcuYDCNxCw9vtaGc_cQWZXeni59fcug8RCWz1rD_8X96Hjv5oqWWecV8xp2nuzovmnyHEWRvaOAhJzPgMXemnGKFMWPVb9v6KZRybYhdhSJmvyPIr5A0Q6NjU2YHoqKAgeMI0K3FIHX917YhNQXWaqXLLu3J5eoFWdkomS3YfCsQMOfIfsxy99vOlM-_OQiaedSY?authuser=0&fife=s16383", note: "超多HOLLO KITTY 刮痧梳子" },
       { day: "第二天 京都🟡", name: "錦市場 京都", lat: 35.0049, lng: 135.7645, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR6v2Ztsqloibj5Z9Fd5bXdHszNl3CDAETEDQ4keS6qzdc0FH7UWJdvaw_Bi_HnlmNGDO8QKUbNCDUvOk3tF_B2ANDyXYMfNFAbQWg5WhnI4s3kNNQG0JU6IuW_sf1L6CyGLn-RzMUeYrG97xS8kyFaFHj6sDYQKmbQ16payw4r8X5Hhj8vKujotfIs6DcZkEoM-uouM0doiIiJTKoQLGpc-Th4S1xgDmd46FfrqCmjBliAyUmJqAiXLP7E?authuser=0&fife=s16383", note: "在地人逛的海鮮市場" },
       { day: "第二天 京都🟡", name: "大創 四條原店", lat: 35.0036, lng: 135.7648, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5qyulcG4r-D3Q4dCcbjdnkiba4UkulkP6a4z0hWwR8csge4jn933D47pbqLlxTj6Ub9zUMljXtGMh-U16yqxDO7AwFqnZLRaXIuFFlCExVidlt8JyjxI2OGtYwOL5OZOIHcjX9iswBeNE28ySQGCYghHOYTkpDboh7yf0MHElHpJ6Xb03s6DOyBK7GFGEky0KJIFQLS6iN5pGgidgDNu1c-wmQtyvNQn6fLkwhCepDuHBKfpsATNCf0jY?authuser=0&fife=s16383", note: "2樓大創" },
@@ -218,7 +242,7 @@
       { day: "第二天 京都🟡", name: "回家點這", lat: 35.000553, lng: 135.761391, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR4A-G4kA9rXG8N_9k1Lfr1RbW-31wFr7ugyqKX1zjgJNB-vNuY-ICCLf1Cum2JrbteLabUJxZ7jvN9t7i9dACjyra8Kz2zqIiP2LnYA86nEdYHyWixBAK_i8ErbDiYLg-monUxkmfu4aDY-GU5gKETbOqe46P3THyDHAwz975nbr26c-B2CF8aDvDJMc-Tdz5ECHZQdTsvvLipMJjpFG_cwThD2-rWG0X9TU6tPGEveqOMRDg-BepE1oek?authuser=0&fife=s16383", note: "回家點這 準特急" },
       { day: "第二天 京都🟡", name: "BEAMS JAPAN 京都", lat: 35.0083, lng: 135.7597, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5up2UNHsNO3n3zu9CVEXCOpxGlUy_NPbgUzti2ZxoLXfMq9cYbQTCWp2gFhbfAi-ifpG5Cy_7FYw6_WN02wcw35-wgeySMkzMz4w2H7OsisrQGzezbM5Y0UQ_LYFFg2KbGCKCb5uNuCbRD2t5T9J6vL0brM2mAuUF6Y4dpmisEFrSnRqLiCtSPWX3gQGu4m6QAQFt0h_YJImg5eyFS0SWiTEyHKy_khNJtviAnuV3ZgmwyqPMNf7QKeo0?authuser=0&fife=s16383", note: "京都限定招財貓" },
 
-      // 神戶🟢 (11個)
+      // 神戶🟢
       { day: "第一天 神戶🟢", name: "神戶臨海樂園", lat: 34.6795, lng: 135.1824, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR7A66cFFxHiuJQi55OachW5B1d0Lr2W0l_fh9ttY7I1eVMs5RB7G7S2sxq5RMRIThuTd7N1Ka52qbnh6Ot1teieiU-Sfo13tr6QG2w1eQ8mw-YolVI62lLU5KBuCGfghYtvNyUEuhrLqQ7AcdnlPPAfpWRYsI02nwgB5bvATOI8sckeYt92D4x1tYx9QS1NWeuAZNOleEwlt-_TBHm1mT1kGUn2GSt6ZQtFllEugRv5jh0cgmXy3aYjSb4?authuser=0&fife=s16383", note: "大型購物商場 可看夜景" },
       { day: "第一天 神戶🟢", name: "異人館", lat: 34.7011, lng: 135.1897, img: "", note: "萊茵之館免費開放" },
       { day: "第一天 神戶🟢", name: "天滿神社", lat: 34.7014, lng: 135.1887, img: "", note: "扇子神社" },
@@ -232,35 +256,34 @@
       { day: "第一天 神戶🟢", name: "南京町 中華街", lat: 34.6881, lng: 135.1880, img: "https://mymaps.usercontent.google.com/hostedimage/m/*/3AAjQbR5un_u_1se6_8iINQ1ViaxgC9ZGtyr6R2RMYlGdH3UJlEqfxNHMBfV1Rle6M3SqN49SzKegqQJwEuYPB7z2BwVYCT56o37o3JegYvR2NWpzJUbMZI9iGrfgOCQED8t3L_y8L_EWRGQvDxTt_eKf1YmYRCJWBC7G0uB2usPXKobq8k5suvjqWnzD_MRoRfo2jMOLISApKMlj3uHtTYr_QG3h7AsZ_zFGXbA2kWmMGK2dxb-1S4ndi6--m0w?authuser=0&fife=s16383", note: "商店街" }
     ];
 
-    // 從手機 LocalStorage 讀取資料
     let places = JSON.parse(localStorage.getItem('szuling_places_final')) || defaultPlaces;
+    
+    // 資料結構升級：確保每個景點都有多圖陣列 (imgs) 與 排除狀態 (excluded)
+    places.forEach(p => {
+        if (!p.imgs) p.imgs = p.img ? [p.img] : [];
+        if (p.customImg && !p.customImgs) p.customImgs = [p.customImg];
+        if (typeof p.excluded === 'undefined') p.excluded = false;
+    });
 
-    function syncToLocal() {
-        localStorage.setItem('szuling_places_final', JSON.stringify(places));
-    }
+    function syncToLocal() { localStorage.setItem('szuling_places_final', JSON.stringify(places)); }
 
-    // ★突破限制的魔法：使用中繼 Proxy 拿圖片，繞過 Google 防盜鏈★
     function getProxiedImageUrl(url) {
         if (!url) return "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
-        // YouTube 縮圖通常不會擋，直接回傳
-        if (url.includes('youtube.com')) return url;
-        // 其餘 Google 雲端圖片，用 wsrv.nl 代理伺服器繞過 CORS 抓圖
+        if (url.includes('youtube.com') || url.includes('data:image')) return url;
         return "https://wsrv.nl/?url=" + encodeURIComponent(url);
     }
 
-    // ★隱藏版 Google Maps 圖磚★：讓 Leaflet 偽裝成真正的 Google Maps 介面！
     let map = L.map('map').setView([34.6723, 135.4983], 12);
     L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-        maxZoom: 20,
-        subdomains: ['mt0','mt1','mt2','mt3'],
-        attribution: '© Google'
+        maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '© Google'
     }).addTo(map);
 
     let currentMarkers = [];
     let routeLayers = [];
     let currentOptimizedRoute = [];
+    let routeRequestId = 0; 
 
-    // 彩蛋與字體座標資料
+    // 彩蛋與字體
     const drawings = [
         { name: "蒙奇奇-頭", type: "poly", color: "#FFCC80", coords: "135.243445,34.5633668 135.2407413,34.5640029 135.2382952,34.5635788 135.2362781,34.5623772 135.2352482,34.5610343 135.2349907,34.5595853 135.235334,34.558525 135.2366215,34.5571466 135.2380806,34.5564044 135.2407414,34.5557329 135.2424151,34.5557329 135.2453333,34.553895 135.2475649,34.5529053 135.2521998,34.5523398 135.2563196,34.5521984 135.2606112,34.5529053 135.2630144,34.553895 135.265246,34.5554501 135.266276,34.5564397 135.2677351,34.5567932 135.2693659,34.5570759 135.270782,34.5579594 135.2721983,34.5593732 135.2723271,34.5603627 135.2721125,34.5613523 135.2710396,34.5628367 135.2692801,34.5636142 135.2669627,34.5638263 135.2645594,34.5635082 135.2624994,34.5654872 135.2611261,34.5664767 135.2590662,34.5674662 135.2564055,34.5682791 135.253101,34.5684558 135.2501398,34.5682084 135.2484232,34.5676783 135.2465778,34.5671129 135.2451616,34.56577 135.243445,34.5633668" },
         { name: "蒙奇奇-髮", type: "poly", color: "#177781", coords: "135.2349907,34.5618118 135.2381236,34.5612463 135.2404838,34.5618118 135.2422005,34.5613877 135.2451616,34.56577 135.2465778,34.5671129 135.2480799,34.5676076 135.2501398,34.5682084 135.253101,34.5684558 135.2564055,34.5682791 135.2596993,34.5671659 135.262124,34.5657611 135.2665764,34.5606809 135.269795,34.5609283 135.2712971,34.5620238 135.2728635,34.5636407 135.2727134,34.5664591 135.2719838,34.5684557 135.2709324,34.5703993 135.2698381,34.5719188 135.2681107,34.574419 135.2668554,34.5752935 135.2654606,34.5761945 135.2630788,34.5774489 135.2608793,34.5785001 135.2588998,34.5791317 135.2549034,34.5798693 135.2519315,34.5800107 135.2478009,34.5800283 135.2433538,34.5786327 135.2413354,34.5776522 135.2396603,34.5765302 135.2381463,34.5753111 135.2368897,34.573986 135.2359402,34.5720028 135.2350766,34.5698428 135.2344113,34.5673226 135.2342611,34.5642016 135.2349907,34.5618118" },
@@ -294,36 +317,78 @@
         return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
+    // ★ 切換排除狀態 ★
+    window.toggleExclude = function(actualIndex, event) {
+        event.stopPropagation();
+        places[actualIndex].excluded = !places[actualIndex].excluded;
+        syncToLocal();
+        
+        // 如果目前正在顯示路線，清除它，讓使用者重新點擊規劃
+        if(currentOptimizedRoute.length > 0) {
+            currentOptimizedRoute = [];
+            routeRequestId++; // 強制中斷舊的畫線
+            document.getElementById('btn-nav').style.display = 'none';
+        }
+        
+        // 重新渲染清單與地圖
+        let val = document.getElementById('day-select').value;
+        let filtered = val === "All" ? places : places.filter(p => p.day === val);
+        
+        // 更新起點選單(過濾掉被排除的)
+        if (val !== "All") {
+            const startSelect = document.getElementById('start-select');
+            let currentVal = startSelect.value;
+            startSelect.innerHTML = "";
+            filtered.filter(p => !p.excluded).forEach(p => {
+                let opt = document.createElement('option');
+                opt.value = p.name;
+                opt.textContent = p.name;
+                startSelect.appendChild(opt);
+            });
+            if (startSelect.querySelector(`option[value="${currentVal}"]`)) {
+                startSelect.value = currentVal;
+            }
+        }
+        
+        renderList(filtered, false);
+        clearMap();
+        renderMap(filtered, false);
+    };
+
     function renderList(displayPlaces, isRouted = false) {
         const list = document.getElementById('place-list');
         list.innerHTML = "";
         displayPlaces.forEach((p, displayIndex) => {
             let actualIndex = places.findIndex(pl => pl.name === p.name);
             let el = document.createElement('div');
-            el.className = "place-card";
+            el.className = `place-card ${p.excluded ? 'is-excluded' : ''}`;
             el.style.borderLeftColor = getMarkerColor(p.day);
             
             let titlePrefix = isRouted ? `<span class="badge bg-secondary me-1">${displayIndex + 1}</span>` : "";
-            
-            // 決定要顯示的圖片 (優先用客製的，再來是代理過的 Google 圖片)
-            let finalImgUrl = p.customImg || getProxiedImageUrl(p.img);
+            let displayImgs = p.customImgs && p.customImgs.length > 0 ? p.customImgs : p.imgs;
+            let firstImgUrl = displayImgs.length > 0 ? getProxiedImageUrl(displayImgs[0]) : "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
             
             el.innerHTML = `
                 <div class="d-flex h-100 align-items-center">
                     <div class="card-img-container">
-                        <img src="${finalImgUrl}">
+                        <img src="${firstImgUrl}" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'">
                     </div>
                     <div class="p-2 pe-4 flex-grow-1">
                         <div class="place-title text-truncate">${titlePrefix}${p.name}</div>
-                        <div class="text-muted" style="font-size:0.85rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">📍 ${p.note}</div>
+                        <div class="text-muted" style="font-size:0.85rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">📍 ${p.note || '無備註'}</div>
                     </div>
                 </div>
-                <div class="btn-edit" onclick="openEditModal(${actualIndex}, event)" title="修改備註/圖片">
-                    <i class="bi bi-pencil-square"></i>
+                <div class="card-actions">
+                    <div class="action-btn" onclick="openEditModal(${actualIndex}, event)" title="修改備註/圖片">
+                        <i class="bi bi-pencil-square text-secondary"></i>
+                    </div>
+                    <div class="action-btn" onclick="toggleExclude(${actualIndex}, event)" title="${p.excluded ? '恢復加入規劃' : '從規劃中排除'}">
+                        <i class="bi ${p.excluded ? 'bi-plus-circle text-success' : 'bi-dash-circle text-danger'}"></i>
+                    </div>
                 </div>
             `;
             el.onclick = (e) => {
-                if(e.target.closest('.btn-edit')) return;
+                if(e.target.closest('.action-btn')) return;
                 map.setView([p.lat, p.lng], 16);
                 currentMarkers[displayIndex].openPopup();
             };
@@ -343,47 +408,66 @@
         displayPlaces.forEach((p, index) => {
             let color = getMarkerColor(p.day);
             let number = isRouted ? (index + 1) : "📍";
-            let finalImgUrl = p.customImg || getProxiedImageUrl(p.img);
             
+            let displayImgs = p.customImgs && p.customImgs.length > 0 ? p.customImgs : p.imgs;
+            if(displayImgs.length === 0) displayImgs = [""];
+
+            let iconHtml = `<div class="marker-circle ${p.excluded ? 'marker-excluded' : ''}" style="background-color: ${color};">${number}</div>`;
             let icon = L.divIcon({
                 className: 'custom-icon',
-                html: `<div style="background-color: ${color}; width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 3px 6px rgba(0,0,0,0.3);">${number}</div>`,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16]
+                html: iconHtml,
+                iconSize: [26, 26],
+                iconAnchor: [13, 13],
+                popupAnchor: [0, -13]
             });
 
-            let marker = L.marker([p.lat, p.lng], {icon: icon}).addTo(map);
-            let popupContent = `
-                <div style="font-size:14px; min-width: 180px; text-align:center;">
-                    <img src="${finalImgUrl}" style="width:100%; height:110px; object-fit:cover; border-radius:6px; margin-bottom:8px;">
-                    <b style="font-size:1.05rem;">${p.name}</b><br>
-                    <span style="color:#666; font-size:0.85rem;">${p.note}</span>
+            // ★ 支援多圖水平滑動的卡片設計 ★
+            let imagesHtml = displayImgs.map(url => `
+                <div class="gm-popup-img-item">
+                    <img src="${getProxiedImageUrl(url)}" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'">
+                </div>
+            `).join('');
+            
+            let swipeHint = displayImgs.length > 1 
+                ? `<div style="text-align:center; font-size:11px; color:#ccc; background:#000; padding:2px 0;">👈 滑動查看共 ${displayImgs.length} 張照片 👉</div>` 
+                : '';
+
+            let popupHtml = `
+                <div class="gm-popup-img-box">${imagesHtml}</div>
+                ${swipeHint}
+                <div class="gm-popup-info">
+                    <div class="gm-popup-title">${p.name} ${p.excluded ? '<span class="badge bg-secondary ms-1">已排除</span>' : ''}</div>
+                    <div class="gm-popup-note">${p.note || '無備註'}</div>
                 </div>
             `;
-            marker.bindPopup(popupContent);
+
+            let marker = L.marker([p.lat, p.lng], {icon: icon}).addTo(map);
+            marker.bindPopup(popupHtml);
             currentMarkers.push(marker);
             bounds.push([p.lat, p.lng]);
         });
         if(bounds.length > 0) map.fitBounds(bounds, {padding: [50, 50]});
     }
 
-    // 分段畫出真實街道 (避免點太多造成伺服器當機)
-    async function drawSegmentedRealRoute(points) {
+    async function drawSegmentedRealRoute(points, reqId) {
         document.getElementById('loader').style.display = 'block';
         document.getElementById('route-warning').style.display = 'none';
         
         let hasError = false;
-        let chunkSize = 15; // 每次只問伺服器 15 個點
+        let chunkSize = 15; 
         let waypoints = points.map(p => `${p.lng},${p.lat}`);
         
         for (let i = 0; i < waypoints.length - 1; i += (chunkSize - 1)) {
+            if (reqId !== routeRequestId) break;
+
             let chunk = waypoints.slice(i, i + chunkSize);
             let coords = chunk.join(';');
             
             try {
-                // 使用 OSRM 抓取真實路徑 GeoJSON
                 let res = await fetch(`https://router.project-osrm.org/route/v1/foot/${coords}?overview=full&geometries=geojson`);
                 let data = await res.json();
+                
+                if (reqId !== routeRequestId) break;
                 
                 if (data.code === 'Ok') {
                     let routeGeoJSON = data.routes[0].geometry;
@@ -396,16 +480,18 @@
                     hasError = true;
                 }
             } catch (err) {
+                if (reqId !== routeRequestId) break;
                 drawFallbackLine(points.slice(i, i + chunkSize));
                 hasError = true;
             }
         }
         
-        document.getElementById('loader').style.display = 'none';
-        if (hasError) document.getElementById('route-warning').style.display = 'block';
+        if (reqId === routeRequestId) {
+            document.getElementById('loader').style.display = 'none';
+            if (hasError) document.getElementById('route-warning').style.display = 'block';
+        }
     }
 
-    // 當機時的備用紅色虛線
     function drawFallbackLine(pointsChunk) {
         let latlngs = pointsChunk.map(p => [p.lat, p.lng]);
         let line = L.polyline(latlngs, {color: '#dc3545', weight: 5, dashArray: '10, 10', opacity: 0.8}).addTo(map);
@@ -427,8 +513,11 @@
         const startPanel = document.getElementById('start-panel');
         const startSelect = document.getElementById('start-select');
         
+        routeRequestId++; 
+        currentOptimizedRoute = []; 
         navBtn.style.display = 'none';
         document.getElementById('route-warning').style.display = 'none';
+        document.getElementById('loader').style.display = 'none';
         clearMap();
 
         if (val === "All") {
@@ -439,7 +528,8 @@
         } else {
             let filtered = places.filter(p => p.day === val);
             startSelect.innerHTML = "";
-            filtered.forEach(p => {
+            // 下拉選單只顯示未排除的景點
+            filtered.filter(p => !p.excluded).forEach(p => {
                 let opt = document.createElement('option');
                 opt.value = p.name;
                 opt.textContent = p.name;
@@ -451,18 +541,24 @@
         }
     });
 
+    // ★ 變更：Open TSP 開放式路線演算 (徹底解決終點交叉問題) ★
     document.getElementById('btn-route').addEventListener('click', async () => {
+        routeRequestId++;
+        const currentReqId = routeRequestId;
+
         const val = document.getElementById('day-select').value;
         const startName = document.getElementById('start-select').value;
         
-        let currentPlaces = places.filter(p => p.day === val);
-        if(currentPlaces.length < 2) return alert("景點數量過少，不需規劃！");
+        // 排除掉不參與規劃的景點
+        let currentPlaces = places.filter(p => p.day === val && !p.excluded);
+        if(currentPlaces.length < 2) return alert("可規劃的景點數量少於2個！");
 
         let startIndex = currentPlaces.findIndex(p => p.name === startName);
         let unvisited = [...currentPlaces];
         let current = unvisited.splice(startIndex, 1)[0]; 
         let route = [current];
 
+        // 階段一：最近鄰居法 (Nearest Neighbor)
         while(unvisited.length > 0) {
             let nearestIdx = -1;
             let minDist = Infinity;
@@ -474,15 +570,48 @@
             route.push(current);
         }
 
+        // 階段二：端點自由的 2-Opt 最佳化演算法 (解開死結)
+        let improved = true;
+        while(improved) {
+            improved = false;
+            for (let i = 1; i < route.length - 1; i++) {
+                for (let j = i + 1; j < route.length; j++) {
+                    if (j === route.length - 1) {
+                        // 當涉及終點時，允許路線任意更換終止點
+                        let d1 = getDistance(route[i-1].lat, route[i-1].lng, route[i].lat, route[i].lng);
+                        let d2 = getDistance(route[i-1].lat, route[i-1].lng, route[j].lat, route[j].lng);
+                        if (d2 < d1) {
+                            let reversed = route.slice(i, j + 1).reverse();
+                            route.splice(i, reversed.length, ...reversed);
+                            improved = true;
+                        }
+                    } else {
+                        // 處理一般中段路線的交叉
+                        let d1 = getDistance(route[i-1].lat, route[i-1].lng, route[i].lat, route[i].lng)
+                               + getDistance(route[j].lat, route[j].lng, route[j+1].lat, route[j+1].lng);
+                        let d2 = getDistance(route[i-1].lat, route[i-1].lng, route[j].lat, route[j].lng)
+                               + getDistance(route[i].lat, route[i].lng, route[j+1].lat, route[j+1].lng);
+                        if (d2 < d1) {
+                            let reversed = route.slice(i, j + 1).reverse();
+                            route.splice(i, reversed.length, ...reversed);
+                            improved = true;
+                        }
+                    }
+                }
+            }
+        }
+
         currentOptimizedRoute = route;
 
         clearMap();
         renderMap(route, true);
         renderList(route, true);
         
-        await drawSegmentedRealRoute(route);
+        await drawSegmentedRealRoute(route, currentReqId);
         
-        document.getElementById('btn-nav').style.display = 'block';
+        if(currentReqId === routeRequestId) {
+            document.getElementById('btn-nav').style.display = 'block';
+        }
     });
 
     document.getElementById('btn-nav').addEventListener('click', () => {
@@ -499,8 +628,9 @@
         window.open(url, '_blank');
     });
 
-    // 編輯功能
+    // 編輯功能 (支援多圖片上傳)
     let editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    let pendingImages = [];
     
     function openEditModal(index, event) {
         event.stopPropagation();
@@ -510,52 +640,73 @@
         document.getElementById('edit-note').value = place.note;
         
         let previewContainer = document.getElementById('preview-container');
-        let preview = document.getElementById('edit-preview');
-        
-        let finalImgUrl = place.customImg || getProxiedImageUrl(place.img);
-        
-        preview.src = finalImgUrl;
-        previewContainer.style.display = 'block';
+        previewContainer.innerHTML = '';
+        pendingImages = [];
         document.getElementById('edit-image').value = ""; 
+
+        let displayImgs = place.customImgs && place.customImgs.length > 0 ? place.customImgs : place.imgs;
+        
+        if (displayImgs.length > 0) {
+            displayImgs.forEach(url => {
+                let imgEl = document.createElement('img');
+                imgEl.src = getProxiedImageUrl(url);
+                imgEl.style.cssText = "max-height: 120px; border-radius: 6px; margin-right: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);";
+                previewContainer.appendChild(imgEl);
+            });
+            previewContainer.style.display = 'block';
+        } else {
+            previewContainer.style.display = 'none';
+        }
+
         editModal.show();
     }
 
     document.getElementById('edit-image').addEventListener('change', function(e) {
-        let file = e.target.files[0];
-        if (!file) return;
+        pendingImages = [];
+        let files = e.target.files;
+        let previewContainer = document.getElementById('preview-container');
+        previewContainer.innerHTML = '';
         
-        let reader = new FileReader();
-        reader.onload = function(event) {
-            let img = new Image();
-            img.onload = function() {
-                let canvas = document.createElement('canvas');
-                let maxWidth = 400; 
-                let scale = Math.min(1, maxWidth / img.width);
-                canvas.width = img.width * scale;
-                canvas.height = img.height * scale;
-                
-                let ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                let base64 = canvas.toDataURL('image/jpeg', 0.7);
-                let preview = document.getElementById('edit-preview');
-                preview.src = base64;
-                document.getElementById('preview-container').style.display = 'block';
-            }
-            img.src = event.target.result;
+        if(files.length === 0) {
+            previewContainer.style.display = 'none';
+            return;
         }
-        reader.readAsDataURL(file);
+        previewContainer.style.display = 'block';
+        
+        Array.from(files).forEach(file => {
+            let reader = new FileReader();
+            reader.onload = function(event) {
+                let img = new Image();
+                img.onload = function() {
+                    let canvas = document.createElement('canvas');
+                    let maxWidth = 400; 
+                    let scale = Math.min(1, maxWidth / img.width);
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    let ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    let base64 = canvas.toDataURL('image/jpeg', 0.7);
+                    pendingImages.push(base64);
+                    
+                    let previewImg = document.createElement('img');
+                    previewImg.src = base64;
+                    previewImg.style.cssText = "max-height: 120px; border-radius: 6px; margin-right: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);";
+                    previewContainer.appendChild(previewImg);
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
     });
 
     function saveEdits() {
         let index = document.getElementById('edit-index').value;
         let newNote = document.getElementById('edit-note').value;
-        let previewContainer = document.getElementById('preview-container');
-        let preview = document.getElementById('edit-preview');
         
         places[index].note = newNote;
-        if (previewContainer.style.display === 'block' && document.getElementById('edit-image').files.length > 0) {
-            places[index].customImg = preview.src; 
+        if (pendingImages.length > 0) {
+            places[index].customImgs = pendingImages; 
         }
         
         syncToLocal();
@@ -563,10 +714,17 @@
         
         let val = document.getElementById('day-select').value;
         let filtered = val === "All" ? places : places.filter(p => p.day === val);
-        renderList(filtered, currentOptimizedRoute.length > 0);
+        
+        // 若有正在規劃的路線，會直接清除路線並顯示新狀態 (避免資料錯亂)
+        if(currentOptimizedRoute.length > 0) {
+            currentOptimizedRoute = [];
+            routeRequestId++; 
+            document.getElementById('btn-nav').style.display = 'none';
+        }
+        
+        renderList(filtered, false);
         clearMap();
-        renderMap(filtered, currentOptimizedRoute.length > 0);
-        if(currentOptimizedRoute.length > 0) drawSegmentedRealRoute(currentOptimizedRoute);
+        renderMap(filtered, false);
     }
 
     // 初始載入
@@ -577,5 +735,3 @@
 </script>
 </body>
 </html>
-
-```
