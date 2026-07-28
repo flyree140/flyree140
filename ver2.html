@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="referrer" content="no-referrer" />
-    <title>關西之旅</title>
+    <title>關西之旅 - 終極完美版</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -109,10 +109,10 @@
         <div class="sidebar-header">
             <h4 class="mb-2 text-dark fw-bold d-flex justify-content-between align-items-center" style="font-size: 1.15rem;">
                 <span>🗺️ 關西之旅</span>
-                <button id="btn-reset" class="btn btn-sm btn-outline-danger shadow-sm py-1 px-2"><i class="bi bi-trash"></i> 重置</button>
+                <!-- 改為「還原狀態」樣式的按鈕 -->
+                <button id="btn-reset" class="btn btn-sm btn-outline-secondary shadow-sm py-1 px-2"><i class="bi bi-arrow-counterclockwise"></i> 重置條件</button>
             </h4>
             
-            <!-- 新增：選項獨立收放按鈕 -->
             <button id="btn-toggle-controls" class="btn btn-light border w-100 shadow-sm mb-2 text-secondary fw-bold" style="font-size: 0.9rem;">
                 <i class="bi bi-chevron-up"></i> 收起設定選項
             </button>
@@ -233,7 +233,7 @@
         }
     }
 
-    // 資料庫 (已全部套用修正)
+    // 資料庫
     const rawData = [
       // 🔵 大阪
       { day: "大阪旅遊🔵", category: "購物", name: "HOKA 心齋橋旗艦店", lat: 34.6766, lng: 135.5015, address: "大阪府大阪市中央区南船場3-5-11", note: "(HOKA)買鞋子 日本最大旗艦店", price: "沒有值", routeLink: "", imgs: parseImages("https://www.youtube.com/embed/_CTSpkCAW48") },
@@ -348,11 +348,26 @@
 
     function syncToLocal() { localStorage.setItem('places_v8', JSON.stringify(places)); }
 
+    // 【修改重點】重置條件按鈕（不刪除 localStorage）
     document.getElementById('btn-reset').addEventListener('click', () => {
-        if(confirm('確定要「重置所有修改與照片」，並恢復成初始狀態嗎？')) {
-            localStorage.removeItem('places_v8');
-            location.reload();
-        }
+        // 重置選單為預設的 "All"
+        document.getElementById('day-select').value = "All";
+        document.getElementById('category-select').value = "All";
+        
+        // 清除正在顯示的路線與狀態
+        routeRequestId++; 
+        currentOptimizedRoute = []; 
+        document.getElementById('btn-nav').style.display = 'none';
+        document.getElementById('route-warning').style.display = 'none';
+        
+        // 展開設定面板
+        toggleControls(true);
+        
+        // 重新執行篩選 (會回到顯示所有點的狀態)
+        applyFilters();
+        
+        // 地圖還原到整個關西全區的預設視角
+        map.setView([34.63, 135.40], 10);
     });
 
     window.popupImageData = {}; 
@@ -406,7 +421,6 @@
         return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
-    // 定位按鈕
     let userMarker, userCircle;
     document.getElementById('btn-locate').addEventListener('click', () => {
         map.locate({setView: true, maxZoom: 16});
@@ -421,14 +435,12 @@
     
     map.on('locationerror', function(e) { alert("無法獲取位置，請確認是否開啟定位權限。"); });
 
-    // 收放側邊欄 (手機版看全螢幕地圖用)
     document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('hidden-sidebar');
         setTimeout(() => { map.invalidateSize(); }, 300);
     });
     
-    // 【新增】控制面板收放功能
     const btnToggleControls = document.getElementById('btn-toggle-controls');
     const controlPanelContent = document.getElementById('control-panel-content');
     
@@ -445,7 +457,6 @@
     
     btnToggleControls.addEventListener('click', () => toggleControls());
 
-    // 篩選與渲染
     function applyFilters() {
         let dayVal = document.getElementById('day-select').value;
         let catVal = document.getElementById('category-select').value;
@@ -653,7 +664,6 @@
         selectDay.appendChild(opt);
     });
 
-    // 防止連續點擊或排版跳動造成的 Bug，加入小延遲
     document.getElementById('day-select').addEventListener('change', () => {
         routeRequestId++; currentOptimizedRoute = []; 
         document.getElementById('btn-nav').style.display = 'none';
@@ -730,7 +740,6 @@
         renderMap(route, true);
         renderList(route, true);
         
-        // 極致 UX 體驗：開始畫路線時，直接把「選項區域」自動折疊起來，釋放畫面給清單跟地圖！
         toggleControls(false);
         
         await drawSegmentedRealRoute(route, currentReqId);
